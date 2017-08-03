@@ -1,10 +1,14 @@
-#include "highgui.h"
+#include <memory>
 
-int main(int argc, char** argv) {
-    IplImage* img = cvLoadImage("labyrinth.png");
+#include "highgui.h"
+#include "util.h"
+
+int
+main(int argc, char **argv)
+{
+    auto img = LoadUniqueImage("labyrinth.png");
     cvNamedWindow("Example1", CV_WINDOW_AUTOSIZE);
-    cvShowImage("Example1", img);
+    cvShowImage("Example1", img.get());
     cvWaitKey(0);
-    cvReleaseImage(&img);
     cvDestroyWindow("Example1");
 }
