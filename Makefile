@@ -6,5 +6,5 @@ clean:
 	rm a.out
 
 .PHONY: run
-run:
+run: a.out
 	LD_LIBRARY_PATH=/usr/local/lib ./a.out
