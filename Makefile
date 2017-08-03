@@ -1,5 +1,5 @@
 a.out: display.cc
-	g++ -std=c++11 display.cc -I/usr/local/include/opencv `pkg-config --libs opencv`
+	g++ -std=c++11 display.cc `pkg-config --cflags --libs opencv`
 
 .PHONY: clean
 clean:
