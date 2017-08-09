@@ -11,4 +11,4 @@ clean:
 
 .PHONY: run
 run: a.out
-	LD_LIBRARY_PATH=/usr/local/lib ./a.out
+	./a.out
