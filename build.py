@@ -8,6 +8,11 @@ import sys
 include_re = re.compile('^#include\s+"([^"]*)')
 
 class TransitiveIncludes(object):
+    """
+    Computes the transitive includes of the given file.
+
+    Only reports files that are accessible from the current directory.
+    """
 
     def __init__(self, cc_file):
         self.includes = set()
@@ -32,6 +37,10 @@ class TransitiveIncludes(object):
                     break
 
 def object_deps(file_name):
+    """
+    Reports all the object deps in the local source tree needed to link the
+    executable corresponding to the given cc file.
+    """
     assert file_name.endswith('.cc')
     yield os.path.splitext(file_name)[0] + '.o'
     for include in TransitiveIncludes(file_name).find():
