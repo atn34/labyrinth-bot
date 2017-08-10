@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+`$ ./build.py` generates a Makefile for building the executable and tests.
+"""
 import itertools
 import os
 import re
