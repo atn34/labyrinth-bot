@@ -70,14 +70,14 @@ if __name__ == "__main__":
     sys.stdout.write('a.out: ' + ' '.join(object_files) + '\n')
     sys.stdout.write('\tg++ -std=c++11 ' +
                      ' '.join(object_files) +
-                     ' `pkg-config --cflags --libs opencv` -o $@\n')
+                     ' `pkg-config --libs opencv` -o $@\n')
 
     for test_cc_file in test_cc_files:
         deps = list(object_deps(test_cc_file))
         sys.stdout.write(test_cc_file + '.exe: ' + ' '.join(deps) + '\n')
         sys.stdout.write('	g++ -std=c++11 ' +
                          ' '.join(deps) +
-                         ' `pkg-config --cflags --libs opencv` -lgtest -lpthread -lgtest_main -o $@\n')
+                         ' `pkg-config --libs opencv` -lgtest -lpthread -lgtest_main -o $@\n')
 
     sys.stdout.write('.PHONY: test\n')
     sys.stdout.write('test: ' + ' '.join(
