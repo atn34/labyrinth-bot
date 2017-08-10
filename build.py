@@ -5,7 +5,7 @@ import re
 import subprocess
 import sys
 
-include_re = re.compile('^#include\s+"([^"]*)')
+INCLUDE_RE = re.compile(r'^#include\s+"([^"]*)')
 
 class TransitiveIncludes(object):
     """
@@ -25,7 +25,7 @@ class TransitiveIncludes(object):
         with open(file_name, 'r') as fil:
             for line in fil:
                 if line.startswith("#include") or line == '\n':
-                    match = include_re.match(line)
+                    match = INCLUDE_RE.match(line)
                     if match:
                         include = match.groups()[0]
                         if include not in self.includes:
@@ -48,10 +48,11 @@ def object_deps(file_name):
         if os.path.isfile(basename + '.cc'):
             yield basename + '.o'
 
-if __name__ == "__main__":
+def main():
     cc_files = set()
     test_cc_files = set()
-    for f in subprocess.check_output('git ls-files | grep "\.cc$"', shell=True).decode('utf-8').splitlines():
+    for f in subprocess.check_output(
+            r'git ls-files | grep "\.cc$"', shell=True).decode('utf-8').splitlines():
         if f.endswith('_test.cc'):
             test_cc_files.add(f)
         elif f.endswith('.cc'):
@@ -84,3 +85,6 @@ if __name__ == "__main__":
         test_cc_file + '.exe' for test_cc_file in test_cc_files) + '\n')
     for test_cc_file in test_cc_files:
         sys.stdout.write('\t./' + test_cc_file + '.exe\n')
+
+if __name__ == "__main__":
+    main()
