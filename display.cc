@@ -1,22 +1,22 @@
-#include <memory>
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
 
-#include "highgui.h"
-#include "util.h"
+using namespace cv;
 
-int main(int argc, char **argv) {
-  auto capture = UniqueCaptureFromCamera(0);
-  double fps = cvGetCaptureProperty(capture.get(), CV_CAP_PROP_FPS);
-  cvNamedWindow("Example1", CV_WINDOW_AUTOSIZE);
+int main(int, char **) {
+  VideoCapture cap(0);
+  if (!cap.isOpened())
+    return -1;
+  Mat frame, edges;
+  namedWindow("edges", 1);
   for (;;) {
-    IplImage *frame = cvQueryFrame(capture.get());
-    auto img = CreateUniqueImage(frame->width, frame->height, IPL_DEPTH_8U, 1);
-    cvCanny(frame, img.get(), 10, 100, 3);
-    cvShowImage("Example1", img.get());
-    int wait_ms = static_cast<int>(1000 / fps);
-    int key_press = cvWaitKey(wait_ms);
-    if (key_press > 0 && key_press != 33 /* escape */) {
+    cap >> frame;
+    cvtColor(frame, edges, COLOR_BGR2GRAY);
+    GaussianBlur(edges, edges, Size(7, 7), 1.5, 1.5);
+    Canny(edges, edges, 0, 30, 3);
+    imshow("edges", edges);
+    if (waitKey(30) >= 0)
       break;
-    }
   }
-  cvDestroyWindow("Example1");
+  return 0;
 }
