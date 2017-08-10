@@ -61,7 +61,7 @@ def main():
             assert False
 
     cflags = subprocess.check_output(
-            'pkg-config --cflags opencv', shell=True).decode('utf-8')[:-1] + ' '.join(['-std=c++11'])
+        'pkg-config --cflags opencv', shell=True).decode('utf-8')[:-1] + ' '.join(['-std=c++11'])
     lflags = subprocess.check_output('pkg-config --libs opencv', shell=True).decode('utf-8')[:-1]
 
     for cc_file in itertools.chain(cc_files, test_cc_files):
