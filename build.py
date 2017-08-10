@@ -29,7 +29,7 @@ class TransitiveIncludes(object):
     def _read_includes(self, file_name):
         with open(file_name, 'r') as fil:
             for line in fil:
-                if line.startswith("#include") or line == '\n':
+                if line.startswith('#include') or line.startswith('//') or line == '\n':
                     match = INCLUDE_RE.match(line)
                     if match:
                         include = match.groups()[0]
@@ -95,5 +95,5 @@ def main():
     for test_cc_file in test_cc_files:
         sys.stdout.write('\t./' + test_cc_file + '.exe\n')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
