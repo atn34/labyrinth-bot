@@ -67,25 +67,25 @@ def main():
             assert False
 
     cflags = subprocess.check_output(
-        'pkg-config --cflags opencv', shell=True).decode('utf-8')[:-1] + ' '.join(['-std=c++11'])
+        'pkg-config --cflags opencv', shell=True).decode('utf-8')[:-1] + ' ' + ' '.join(['-std=c++11'])
     lflags = subprocess.check_output('pkg-config --libs opencv', shell=True).decode('utf-8')[:-1]
 
     for cc_file in itertools.chain(cc_files, test_cc_files):
         sys.stdout.write(
             os.path.splitext(cc_file)[0]+'.o: ' + ' '.join(TransitiveIncludes(cc_file).find()) + '\n')
-        sys.stdout.write('\tg++ -std=c++11 -c %s %s -o $@\n' % (cc_file, cflags))
+        sys.stdout.write('\tg++ -c %s %s -o $@\n' % (cc_file, cflags))
 
     object_files = [os.path.splitext(cc_file)[0]+'.o' for cc_file in cc_files]
 
     sys.stdout.write('a.out: ' + ' '.join(object_files) + '\n')
-    sys.stdout.write('\tg++ -std=c++11 ' +
+    sys.stdout.write('\tg++ ' +
                      ' '.join(object_files) +
                      ' %s -o $@\n' % lflags)
 
     for test_cc_file in test_cc_files:
         deps = list(object_deps(test_cc_file))
         sys.stdout.write(test_cc_file + '.exe: ' + ' '.join(deps) + '\n')
-        sys.stdout.write('	g++ -std=c++11 ' +
+        sys.stdout.write('	g++ ' +
                          ' '.join(deps) +
                          ' %s -lgtest -lpthread -lgtest_main -o $@\n' % lflags)
 
