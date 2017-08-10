@@ -13,7 +13,8 @@ int main(int argc, char **argv) {
     cvCanny(frame, img.get(), 10, 100, 3);
     cvShowImage("Example1", img.get());
     int wait_ms = static_cast<int>(1000 / fps);
-    if (cvWaitKey(wait_ms) > 0) {
+    int key_press = cvWaitKey(wait_ms);
+    if (key_press > 0 && key_press != 33 /* escape */) {
       break;
     }
   }
