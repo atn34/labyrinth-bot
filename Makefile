@@ -1,6 +1,3 @@
-a.out: display.cc
-	g++ -std=c++11 display.cc `pkg-config --cflags --libs opencv`
-
 .PHONY: doxygen
 doxygen:
 	doxygen
@@ -10,5 +7,11 @@ clean:
 	rm -rf a.out html latex
 
 .PHONY: run
-run: a.out
+run: 
+	./build.py | make a.out -f -
 	./a.out
+
+.PHONY: test
+test:
+	./build.py | make test.out -f -
+	./test.out
