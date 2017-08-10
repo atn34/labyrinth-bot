@@ -68,12 +68,12 @@ def main():
 
     cflags = subprocess.check_output(
         'pkg-config --cflags opencv', shell=True).decode(
-            'utf-8')[:-1] + ' ' + ' '.join(['-std=c++11'])
+            'utf-8')[:-1] + ' ' + ' '.join(['-std=c++11', '-Wall', '-Werror'])
     lflags = subprocess.check_output('pkg-config --libs opencv', shell=True).decode('utf-8')[:-1]
 
     for cc_file in itertools.chain(cc_files, test_cc_files):
         sys.stdout.write(
-            os.path.splitext(cc_file)[0]+'.o: ' + ' '.join(
+            os.path.splitext(cc_file)[0]+'.o: ' + cc_file + ' ' + ' '.join(
                 TransitiveIncludes(cc_file).find()) + '\n')
         sys.stdout.write('\tg++ -c %s %s -o $@\n' % (cc_file, cflags))
 
