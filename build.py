@@ -19,6 +19,9 @@ class TransitiveIncludes(object):
         self.cc_file = cc_file
 
     def find(self):
+        """
+        Yield the transitive includes.
+        """
         yield from self._read_includes(self.cc_file)
 
     def _read_includes(self, file_name):
