@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	./build.py | make a.out -f -
+	./build.py | ${MAKE} a.out -f -
 
 .PHONY: doxygen
 doxygen:
@@ -18,4 +18,4 @@ run: build
 
 .PHONY: test
 test:
-	./build.py | make test -f -
+	./build.py | ${MAKE} test -f -
