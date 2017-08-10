@@ -4,5 +4,5 @@ install:
   - sudo ldconfig
 
 script:
-  - ./build.py | make a.out -f -
+  - make build
   - make test
