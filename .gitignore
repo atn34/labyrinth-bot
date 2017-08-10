@@ -146,4 +146,3 @@ ENV/
 html/
 latex/
 .vscode/tags
-opencv-*

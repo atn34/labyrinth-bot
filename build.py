@@ -56,7 +56,7 @@ def main():
     cc_files = set()
     test_cc_files = set()
     for f in subprocess.check_output(
-            r'git ls-files | grep "\.cc$"', shell=True).decode('utf-8').splitlines():
+            r'find . -type f -name "*.cc"', shell=True).decode('utf-8').splitlines():
         if f.endswith('_test.cc'):
             test_cc_files.add(f)
         elif f.endswith('.cc'):
