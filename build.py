@@ -2,7 +2,6 @@
 """
 `$ ./build.py` generates a Makefile for building the executable and tests.
 """
-import itertools
 import os
 import re
 import subprocess
@@ -44,11 +43,10 @@ class TransitiveIncludes(object):
 
 def object_deps(file_name):
     """
-    Reports all the object deps in the local source tree needed to link the
+    Reports all the object deps in the local source tree needed to compile the
     executable corresponding to the given cc file.
     """
     assert file_name.endswith('.cc')
-    yield os.path.splitext(file_name)[0] + '.o'
     for include in TransitiveIncludes(file_name).find():
         basename = os.path.splitext(include)[0]
         if os.path.isfile(basename + '.cc'):
@@ -71,7 +69,7 @@ def main():
             'utf-8')[:-1] + ' ' + ' '.join(['-std=c++11', '-Wall', '-Werror'])
     lflags = subprocess.check_output('pkg-config --libs opencv', shell=True).decode('utf-8')[:-1]
 
-    for cc_file in itertools.chain(cc_files, test_cc_files):
+    for cc_file in cc_files:
         sys.stdout.write(
             os.path.splitext(cc_file)[0]+'.o: ' + cc_file + ' ' + ' '.join(
                 TransitiveIncludes(cc_file).find()) + '\n')
@@ -86,8 +84,8 @@ def main():
 
     for test_cc_file in test_cc_files:
         deps = list(object_deps(test_cc_file))
-        sys.stdout.write(test_cc_file + '.exe: ' + ' '.join(deps) + '\n')
-        sys.stdout.write('	g++ ' +
+        sys.stdout.write(test_cc_file + '.exe: ' + test_cc_file + ' ' + ' '.join(deps) + '\n')
+        sys.stdout.write('	g++ ' + test_cc_file + ' '
                          ' '.join(deps) +
                          ' %s -lgtest -lpthread -lgtest_main -o $@\n' % lflags)
 
