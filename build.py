@@ -2,6 +2,7 @@
 """
 `$ ./build.py` generates a Makefile for building the executable and tests.
 """
+import itertools
 import os
 import re
 import subprocess
@@ -55,10 +56,13 @@ def object_deps(file_name):
 def main():
     cc_files = set()
     test_cc_files = set()
+    main_cc_files = set()
     for f in subprocess.check_output(
             r'find . -type f -name "*.cc"', shell=True).decode('utf-8').splitlines():
         if f.endswith('_test.cc'):
             test_cc_files.add(f)
+        elif f.endswith('_main.cc'):
+            main_cc_files.add(f)
         elif f.endswith('.cc'):
             cc_files.add(f)
         else:
@@ -75,24 +79,29 @@ def main():
                 TransitiveIncludes(cc_file).find()) + '\n')
         sys.stdout.write('\tg++ -c %s %s -o $@\n' % (cc_file, cflags))
 
-    object_files = [os.path.splitext(cc_file)[0]+'.o' for cc_file in cc_files]
-
-    sys.stdout.write('a.out: ' + ' '.join(object_files) + '\n')
-    sys.stdout.write('\tg++ ' +
-                     ' '.join(object_files) +
-                     ' %s -o $@\n' % lflags)
-
     for test_cc_file in test_cc_files:
         deps = list(object_deps(test_cc_file))
         sys.stdout.write(test_cc_file + '.exe: ' + test_cc_file + ' ' + ' '.join(deps) + '\n')
         sys.stdout.write('	g++ ' + test_cc_file + ' ' + ' '.join(deps) +
                          ' %s -lgtest -lpthread -lgtest_main -o $@\n' % lflags)
 
+    for main_cc_file in main_cc_files:
+        deps = list(object_deps(main_cc_file))
+        sys.stdout.write(main_cc_file + '.exe: ' + main_cc_file + ' ' + ' '.join(deps) + '\n')
+        sys.stdout.write('	g++ ' + main_cc_file + ' ' + ' '.join(deps) +
+                         ' %s -o $@\n' % lflags)
+
+
     sys.stdout.write('.PHONY: test\n')
     sys.stdout.write('test: ' + ' '.join(
         test_cc_file + '.exe' for test_cc_file in test_cc_files) + '\n')
     for test_cc_file in test_cc_files:
         sys.stdout.write('\t./' + test_cc_file + '.exe\n')
+
+    sys.stdout.write('.PHONY: build\n')
+    sys.stdout.write('build: ' + ' '.join(
+        main_cc_file + '.exe' for main_cc_file in itertools.chain(
+            main_cc_files, test_cc_files)) + '\n')
 
 if __name__ == '__main__':
     main()

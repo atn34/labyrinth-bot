@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	./build.py | ${MAKE} a.out -f -
+	./build.py | ${MAKE} build -f -
 
 .PHONY: doxygen
 doxygen:
@@ -11,10 +11,6 @@ clean:
 	rm -rf a.out html latex
 	find . -type f -name '*.o' -delete
 	find . -type f -name '*.exe' -delete
-
-.PHONY: run
-run: build
-	./a.out
 
 .PHONY: test
 test:
