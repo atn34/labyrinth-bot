@@ -2,6 +2,8 @@
 
 #include "find_pink_corners.h"
 
+#include "connected_components.h"
+
 using namespace cv;
 
 Mat HueThresholder::thresh(const Mat &src) {
