@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "opencv2/highgui.hpp"
 
 #include "find_pink_corners.h"
@@ -29,17 +27,7 @@ int main(int, char **) {
     }
 
     HueThresholder thresholder(hue_low, hue_high, erosion_size);
-
     Mat threshed = thresholder.thresh(src);
-
-    ConnectedComponentsVisitor visitor(&threshed);
-
-    int num_connected_components = 0;
-    visitor.Visit([&](int row, int col, int label) {
-      num_connected_components = label + 1;
-    });
-    std::cout << "num_connected_components: " << num_connected_components << std::endl;
-
     imshow("Hue", threshed);
 
     if (cvWaitKey(30) > 0) {
