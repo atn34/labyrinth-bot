@@ -66,7 +66,7 @@ def main():
 
     cflags = subprocess.check_output(
         'pkg-config --cflags opencv', shell=True).decode(
-            'utf-8')[:-1] + ' ' + ' '.join(['-std=c++11', '-Wall', '-Werror'])
+            'utf-8')[:-1] + ' ' + ' '.join(['-std=c++11', '-Wall', '-Werror', '-g'])
     lflags = subprocess.check_output('pkg-config --libs opencv', shell=True).decode('utf-8')[:-1]
 
     for cc_file in cc_files:
