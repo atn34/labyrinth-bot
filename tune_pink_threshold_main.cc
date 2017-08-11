@@ -3,7 +3,6 @@
 #include "find_pink_corners.h"
 
 using namespace cv;
-using namespace std;
 
 int main(int, char **) {
   VideoCapture cap(1);
@@ -31,7 +30,7 @@ int main(int, char **) {
     imshow("Hue", threshed);
 
     if (cvWaitKey(30) > 0) {
-        break;
+      break;
     }
   }
   return 0;

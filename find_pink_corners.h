@@ -6,7 +6,7 @@
 
 #include "opencv2/imgproc.hpp"
 
-constexpr int kPinkHueLow = 4;
+constexpr int kPinkHueLow = 0;
 constexpr int kPinkHueHigh = 16;
 constexpr int kPinkErosionSize = 3;
 
@@ -93,5 +93,8 @@ private:
   int component_label_ = 0;
   std::vector<int> to_visit_;
 };
+
+bool FindPinkCorners(const cv::Mat &src,
+                     std::vector<cv::Point2f> *pink_corners);
 
 #endif /* FIND_PINK_CORNERS_H */
