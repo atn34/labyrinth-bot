@@ -82,13 +82,13 @@ def main():
     for test_cc_file in test_cc_files:
         deps = list(object_deps(test_cc_file))
         sys.stdout.write(test_cc_file + '.exe: ' + test_cc_file + ' ' + ' '.join(deps) + '\n')
-        sys.stdout.write('	g++ ' + test_cc_file + ' ' + ' '.join(deps) +
+        sys.stdout.write('	g++ ' + test_cc_file + (' %s ' % cflags) + ' '.join(deps) +
                          ' %s -lgtest -lpthread -lgtest_main -o $@\n' % lflags)
 
     for main_cc_file in main_cc_files:
         deps = list(object_deps(main_cc_file))
         sys.stdout.write(main_cc_file + '.exe: ' + main_cc_file + ' ' + ' '.join(deps) + '\n')
-        sys.stdout.write('	g++ ' + main_cc_file + ' ' + ' '.join(deps) +
+        sys.stdout.write('	g++ ' + main_cc_file + (' %s ' % cflags) + ' '.join(deps) +
                          ' %s -o $@\n' % lflags)
 
 
