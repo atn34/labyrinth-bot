@@ -4,27 +4,9 @@
 #include "opencv2/opencv.hpp"
 
 #include "find_pink_corners.h"
+#include "threshold_ball.h"
 
 using namespace cv;
-
-const Mat &get_ball_mask() {
-  static const Mat &out = []() {
-    Mat board = imread("board.png");
-    auto *result = new Mat(board.rows, board.cols, CV_8U);
-    for (int r = 0; r < board.rows; ++r) {
-      for (int c = 0; c < board.cols; ++c) {
-        const auto &point = board.at<Vec3b>(r, c);
-        if (point[0] == 220 && point[1] == 0 && point[2] == 255) {
-          result->at<uchar>(r, c) = 0;
-        } else {
-          result->at<uchar>(r, c) = 1;
-        }
-      }
-    }
-    return *result;
-  }();
-  return out;
-}
 
 int main(int, char **) {
   VideoCapture cap(1);
@@ -45,10 +27,6 @@ int main(int, char **) {
   dst.push_back(Point(630, 470));
   dst.push_back(Point(10, 470));
 
-  Mat mask = get_ball_mask();
-
-  Mat result = Mat::zeros(480, 640, CV_8UC1);
-
   for (;;) {
     cap >> src;
     if (!src.data) {
@@ -64,19 +42,11 @@ int main(int, char **) {
 
     warpPerspective(src, transformed, transform, src.size());
 
-    Mat hsv;
+    ThresholdBall threshold_ball(low * 2 + 3, high - 255);
 
-    std::vector<Mat> hsv_planes;
-    split(transformed, hsv_planes);
+    masked = threshold_ball.Threshold(transformed);
 
-    adaptiveThreshold(hsv_planes[0], hsv_planes[0], 255,
-                      CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY,
-                      low * 2 + 3, high - 255);
-
-    hsv_planes[0].copyTo(masked, mask);
-
-    bitwise_or(result, masked, result);
-    imshow("Perspective Transform", result);
+    imshow("Perspective Transform", masked);
 
     if (cvWaitKey(30) > 0) {
       break;
