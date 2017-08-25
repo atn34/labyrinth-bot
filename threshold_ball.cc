@@ -23,7 +23,7 @@ const Mat &get_ball_mask() {
   return out;
 }
 
-Mat ThresholdBall::Threshold(Mat transformed) {
+Mat ThresholdBall::Threshold(Mat transformed) const {
   std::vector<Mat> hsv_planes;
   split(transformed, hsv_planes);
 

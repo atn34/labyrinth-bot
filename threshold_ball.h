@@ -12,7 +12,7 @@ public:
                        int ball_thresh_c = kBallThreshC)
       : block_size_(block_size), ball_thresh_c_(ball_thresh_c) {}
 
-  cv::Mat Threshold(cv::Mat transformed);
+  cv::Mat Threshold(cv::Mat transformed) const;
 
 private:
   int block_size_;

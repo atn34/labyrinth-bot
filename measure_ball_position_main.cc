@@ -1,9 +1,8 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
 
-#include "connected_components.h"
+#include "measure_ball_position.h"
 #include "perspective_transform.h"
-#include "threshold_ball.h"
 
 using namespace cv;
 
@@ -12,8 +11,6 @@ int main(int, char **) {
   if (!cap.isOpened())
     return -1;
   namedWindow("Ball position", CV_WINDOW_AUTOSIZE);
-
-  ThresholdBall threshold_ball;
 
   Mat src, transformed, masked, ball_coords;
 
@@ -49,41 +46,13 @@ int main(int, char **) {
       continue;
     }
 
-    masked = threshold_ball.Threshold(transformed);
-
-    ConnectedComponentsVisitor visitor(&masked);
-
-    struct ComponentInfo {
-      float xs = 0;
-      float ys = 0;
-      int size = 0;
-    };
-    std::vector<ComponentInfo> infos;
-    int my_label = -1;
-
-    visitor.Visit([&](int row, int col, int label) {
-      if (my_label != label) {
-        ++my_label;
-        infos.push_back(ComponentInfo{});
-      }
-      auto &info = infos.back();
-      info.ys += (static_cast<float>(row));
-      info.xs += (static_cast<float>(col));
-      ++info.size;
-    });
-
-    if (infos.size() == 0) {
+    Point measured;
+    if (!MeasureBallPosition(transformed, &measured)) {
       continue;
     }
 
-    std::sort(infos.begin(), infos.end(),
-              [](const ComponentInfo &x, const ComponentInfo &y) {
-                return x.size > y.size;
-              });
-
-    const auto &ball_info = infos[0];
-    measurement(0) = ball_info.xs / ball_info.size;
-    measurement(1) = ball_info.ys / ball_info.size;
+    measurement(0) = measured.x;
+    measurement(1) = measured.y;
 
     if (!initialized_kf) {
       kf.statePre.at<float>(0) = measurement(0);
