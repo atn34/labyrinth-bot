@@ -7,15 +7,6 @@
 
 using namespace cv;
 
-float avg(const std::vector<float> &v) {
-  float result = 0;
-  int size = v.size();
-  for (const auto &x : v) {
-    result += x / size;
-  }
-  return result;
-}
-
 int main(int, char **) {
   VideoCapture cap(1);
   if (!cap.isOpened())
@@ -42,8 +33,8 @@ int main(int, char **) {
     ConnectedComponentsVisitor visitor(&masked);
 
     struct ComponentInfo {
-      std::vector<float> xs;
-      std::vector<float> ys;
+      float xs = 0;
+      float ys = 0;
       int size = 0;
     };
     std::vector<ComponentInfo> infos;
@@ -55,8 +46,8 @@ int main(int, char **) {
         infos.push_back(ComponentInfo{});
       }
       auto &info = infos.back();
-      info.ys.push_back(static_cast<float>(row));
-      info.xs.push_back(static_cast<float>(col));
+      info.ys += (static_cast<float>(row));
+      info.xs += (static_cast<float>(col));
       ++info.size;
     });
 
@@ -67,8 +58,9 @@ int main(int, char **) {
 
     if (infos.size() > 0) {
       const auto &ball_info = infos[0];
-      circle(transformed, Point(avg(ball_info.xs), avg(ball_info.ys)), 10,
-             Scalar(0, 0, 255));
+      circle(transformed, Point(ball_info.xs / ball_info.size,
+                                ball_info.ys / ball_info.size),
+             10, Scalar(0, 0, 255));
     }
 
     imshow("Ball position", transformed);

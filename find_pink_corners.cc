@@ -20,27 +20,14 @@ Mat HueThresholder::thresh(const Mat &src) {
   return hsv_planes[0];
 }
 
-namespace {
-
-float avg(std::vector<float> &v) {
-  float result = 0;
-  int size = v.size();
-  for (const auto &x : v) {
-    result += x / size;
-  }
-  return result;
-}
-
-} // namespace
-
 bool FindPinkCorners(const Mat &src, std::vector<Point2f> *pink_corners) {
   HueThresholder thresholder;
   Mat threshed = thresholder.thresh(src);
   ConnectedComponentsVisitor visitor(&threshed);
 
   struct ComponentInfo {
-    std::vector<float> xs;
-    std::vector<float> ys;
+    float xs = 0;
+    float ys = 0;
     int size = 0;
   };
   std::vector<ComponentInfo> infos;
@@ -52,8 +39,8 @@ bool FindPinkCorners(const Mat &src, std::vector<Point2f> *pink_corners) {
       infos.push_back(ComponentInfo{});
     }
     auto &info = infos.back();
-    info.ys.push_back(static_cast<float>(row));
-    info.xs.push_back(static_cast<float>(col));
+    info.ys += static_cast<float>(row);
+    info.xs += static_cast<float>(col);
     ++info.size;
   });
 
@@ -71,8 +58,8 @@ bool FindPinkCorners(const Mat &src, std::vector<Point2f> *pink_corners) {
 
   std::vector<Point2f> result;
   for (auto &info : infos) {
-    float x = static_cast<float>(avg(info.xs));
-    float y = static_cast<float>(avg(info.ys));
+    float x = static_cast<float>(info.xs / info.size);
+    float y = static_cast<float>(info.ys / info.size);
     result.push_back(Point2f{x, y});
   }
 
