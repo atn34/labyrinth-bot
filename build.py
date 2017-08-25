@@ -10,6 +10,30 @@ import sys
 
 INCLUDE_RE = re.compile(r'^#include\s+"([^"]*)')
 
+class memoize:
+    def __init__(self, fn):
+        self.fn = fn
+        self.memo = {}
+    def __call__(self, *args):
+        if args not in self.memo:
+            self.memo[args] = self.fn(*args)
+        return self.memo[args]
+
+@memoize
+def includes_from_file(file_name):
+    result = []
+    with open(file_name, 'r') as fil:
+        for line in fil:
+            if line.startswith('#include') or line.startswith('//') or line == '\n':
+                match = INCLUDE_RE.match(line)
+                if match:
+                    include = match.groups()[0]
+                    if os.path.isfile(include):
+                        result.append(include)
+            else:
+                break
+    return result
+
 class TransitiveIncludes(object):
     """
     Computes the transitive includes of the given file.
@@ -29,29 +53,21 @@ class TransitiveIncludes(object):
         yield from self._read_includes(self.cc_file)
 
     def _read_includes(self, file_name):
-        with open(file_name, 'r') as fil:
-            if self.includes_from_cc:
-                if file_name not in self.files_processed:
-                    self.files_processed.add(file_name)
-                else:
-                    return
-            for line in fil:
-                if line.startswith('#include') or line.startswith('//') or line == '\n':
-                    match = INCLUDE_RE.match(line)
-                    if match:
-                        include = match.groups()[0]
-                        if include not in self.files_processed:
-                            self.files_processed.add(include)
-                            if os.path.isfile(include):
-                                yield include
-                                yield from self._read_includes(include)
-                                if self.includes_from_cc:
-                                    basename = os.path.splitext(include)[0]
-                                    if os.path.isfile(basename + '.cc'):
-                                        yield from self._read_includes(basename + '.cc')
+        if self.includes_from_cc:
+            if file_name not in self.files_processed:
+                self.files_processed.add(file_name)
+            else:
+                return
+        for include in includes_from_file(file_name):
+            if include not in self.files_processed:
+                self.files_processed.add(include)
+                yield include
+                yield from self._read_includes(include)
+                if self.includes_from_cc:
+                    basename = os.path.splitext(include)[0]
+                    if os.path.isfile(basename + '.cc'):
+                        yield from self._read_includes(basename + '.cc')
 
-                else:
-                    break
 
 def object_deps(file_name):
     """
