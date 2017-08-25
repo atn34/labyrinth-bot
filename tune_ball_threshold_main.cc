@@ -3,7 +3,7 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
 
-#include "find_pink_corners.h"
+#include "perspective_transform.h"
 #include "threshold_ball.h"
 
 using namespace cv;
@@ -21,11 +21,6 @@ int main(int, char **) {
 
   Mat src, transformed, masked;
   Mat transform = Mat::eye(3, 3, CV_32FC1);
-  std::vector<Point2f> dst;
-  dst.push_back(Point(10, 10));
-  dst.push_back(Point(630, 10));
-  dst.push_back(Point(630, 470));
-  dst.push_back(Point(10, 470));
 
   for (;;) {
     cap >> src;
@@ -35,12 +30,9 @@ int main(int, char **) {
 
     flip(src, src, -1);
 
-    std::vector<Point2f> src_corners;
-    if (FindPinkCorners(src, &src_corners)) {
-      transform = getPerspectiveTransform(src_corners, dst);
+    if (!PerspectiveTransform(src, &transformed)) {
+        continue;
     }
-
-    warpPerspective(src, transformed, transform, src.size());
 
     ThresholdBall threshold_ball(low * 2 + 3, high - 255);
 
