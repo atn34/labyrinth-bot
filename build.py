@@ -17,8 +17,9 @@ class TransitiveIncludes(object):
     Only reports files that are accessible from the current directory.
     """
 
-    def __init__(self, cc_file):
-        self.includes = set()
+    def __init__(self, cc_file, includes_from_cc=False):
+        self.files_processed = set()
+        self.includes_from_cc = includes_from_cc
         self.cc_file = cc_file
 
     def find(self):
@@ -29,16 +30,26 @@ class TransitiveIncludes(object):
 
     def _read_includes(self, file_name):
         with open(file_name, 'r') as fil:
+            if self.includes_from_cc:
+                if file_name not in self.files_processed:
+                    self.files_processed.add(file_name)
+                else:
+                    return
             for line in fil:
                 if line.startswith('#include') or line.startswith('//') or line == '\n':
                     match = INCLUDE_RE.match(line)
                     if match:
                         include = match.groups()[0]
-                        if include not in self.includes:
-                            self.includes.add(include)
+                        if include not in self.files_processed:
+                            self.files_processed.add(include)
                             if os.path.isfile(include):
                                 yield include
                                 yield from self._read_includes(include)
+                                if self.includes_from_cc:
+                                    basename = os.path.splitext(include)[0]
+                                    if os.path.isfile(basename + '.cc'):
+                                        yield from self._read_includes(basename + '.cc')
+
                 else:
                     break
 
@@ -48,7 +59,7 @@ def object_deps(file_name):
     executable corresponding to the given cc file.
     """
     assert file_name.endswith('.cc')
-    for include in TransitiveIncludes(file_name).find():
+    for include in TransitiveIncludes(file_name, includes_from_cc=True).find():
         basename = os.path.splitext(include)[0]
         if os.path.isfile(basename + '.cc'):
             yield basename + '.o'
