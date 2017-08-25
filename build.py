@@ -104,18 +104,18 @@ def main():
         sys.stdout.write(
             os.path.splitext(cc_file)[0]+'.o: ' + cc_file + ' ' + ' '.join(
                 TransitiveIncludes(cc_file).find()) + '\n')
-        sys.stdout.write('\tg++ -c %s %s -o $@\n' % (cc_file, cflags))
+        sys.stdout.write('\tg++ -c %s $(CFLAGS) %s -o $@\n' % (cc_file, cflags))
 
     for test_cc_file in test_cc_files:
         deps = list(object_deps(test_cc_file))
         sys.stdout.write(test_cc_file + '.exe: ' + test_cc_file + ' ' + ' '.join(deps) + '\n')
-        sys.stdout.write('	g++ ' + test_cc_file + (' %s ' % cflags) + ' '.join(deps) +
+        sys.stdout.write('	g++ ' + test_cc_file + (' $(CFLAGS) %s ' % cflags) + ' '.join(deps) +
                          ' %s -lgtest -lpthread -lgtest_main -o $@\n' % lflags)
 
     for main_cc_file in main_cc_files:
         deps = list(object_deps(main_cc_file))
         sys.stdout.write(main_cc_file + '.exe: ' + main_cc_file + ' ' + ' '.join(deps) + '\n')
-        sys.stdout.write('	g++ ' + main_cc_file + (' %s ' % cflags) + ' '.join(deps) +
+        sys.stdout.write('	g++ ' + main_cc_file + (' $(CFLAGS) %s ' % cflags) + ' '.join(deps) +
                          ' %s -o $@\n' % lflags)
 
 
