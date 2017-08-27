@@ -26,3 +26,22 @@ sudo cmake CMakeLists.txt
 sudo make
 sudo cp *.a /usr/lib
 popd
+
+# libsocket
+
+LIBSOCKET_VERSION=2.4.1
+LIBSOCKET_TARNAME=libsocket-${LIBSOCKET_VERSION}.tar.gz
+
+if ! [ -f /usr/lib/libsocket++.so ] ; then 
+    wget https://github.com/dermesser/libsocket/archive/v${LIBSOCKET_VERSION}.tar.gz -O ${LIBSOCKET_TARNAME}
+    tar -xvf ${LIBSOCKET_TARNAME}
+    pushd libsocket-${LIBSOCKET_VERSION}
+    mkdir -p build
+    pushd build
+    cmake ..
+    make -j8
+    sudo make install
+    popd
+    popd
+fi
+
