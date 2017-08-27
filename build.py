@@ -2,7 +2,7 @@
 """
 `$ ./build.py` generates a Makefile for building the executable and tests.
 """
-import itertools
+from itertools import chain
 import os
 import re
 import subprocess
@@ -80,12 +80,16 @@ def object_deps(file_name):
         if os.path.isfile(basename + '.cc'):
             yield basename + '.o'
 
+def header_deps(file_name):
+    assert file_name.endswith('.cc')
+    yield from TransitiveIncludes(file_name).find()
+
 def main():
     cc_files = set()
     test_cc_files = set()
     main_cc_files = set()
     for f in subprocess.check_output(
-            r'find . -type f -name "*.cc"', shell=True).decode('utf-8').splitlines():
+            r'find . -type f -name "*.cc" | sort', shell=True).decode('utf-8').splitlines():
         if f.endswith('_test.cc'):
             test_cc_files.add(f)
         elif f.endswith('_main.cc'):
@@ -95,6 +99,11 @@ def main():
         else:
             assert False
 
+     # To make diffing build.py outputs easier
+    cc_files = sorted(cc_files)
+    test_cc_files = sorted(test_cc_files)
+    main_cc_files = sorted(main_cc_files)
+
     cflags = subprocess.check_output(
         'pkg-config --cflags opencv', shell=True).decode(
             'utf-8')[:-1] + ' ' + ' '.join(['-std=c++11', '-Wall', '-Werror', '-g'])
@@ -103,21 +112,20 @@ def main():
     for cc_file in cc_files:
         sys.stdout.write(
             os.path.splitext(cc_file)[0]+'.o: ' + cc_file + ' ' + ' '.join(
-                TransitiveIncludes(cc_file).find()) + '\n')
+                header_deps(cc_file)) + '\n')
         sys.stdout.write('\tg++ -c %s $(CFLAGS) %s -o $@\n' % (cc_file, cflags))
 
     for test_cc_file in test_cc_files:
-        deps = list(object_deps(test_cc_file))
-        sys.stdout.write(test_cc_file + '.exe: ' + test_cc_file + ' ' + ' '.join(deps) + '\n')
-        sys.stdout.write('	g++ ' + test_cc_file + (' $(CFLAGS) %s ' % cflags) + ' '.join(deps) +
+        o_deps = list(object_deps(test_cc_file))
+        sys.stdout.write(test_cc_file + '.exe: ' + test_cc_file + ' ' + ' '.join(chain(o_deps, header_deps(test_cc_file))) + '\n')
+        sys.stdout.write('	g++ ' + test_cc_file + (' $(CFLAGS) %s ' % cflags) + ' '.join(o_deps) +
                          ' %s -lgtest -lpthread -lgtest_main -o $@\n' % lflags)
 
     for main_cc_file in main_cc_files:
-        deps = list(object_deps(main_cc_file))
-        sys.stdout.write(main_cc_file + '.exe: ' + main_cc_file + ' ' + ' '.join(deps) + '\n')
-        sys.stdout.write('	g++ ' + main_cc_file + (' $(CFLAGS) %s ' % cflags) + ' '.join(deps) +
+        o_deps = list(object_deps(main_cc_file))
+        sys.stdout.write(main_cc_file + '.exe: ' + main_cc_file + ' ' + ' '.join(chain(o_deps, header_deps(main_cc_file))) + '\n')
+        sys.stdout.write('	g++ ' + main_cc_file + (' $(CFLAGS) %s ' % cflags) + ' '.join(o_deps) +
                          ' %s -o $@\n' % lflags)
-
 
     sys.stdout.write('.PHONY: test\n')
     sys.stdout.write('test: ' + ' '.join(
@@ -127,7 +135,7 @@ def main():
 
     sys.stdout.write('.PHONY: build\n')
     sys.stdout.write('build: ' + ' '.join(
-        main_cc_file + '.exe' for main_cc_file in itertools.chain(
+        main_cc_file + '.exe' for main_cc_file in chain(
             main_cc_files, test_cc_files)) + '\n')
 
 if __name__ == '__main__':
