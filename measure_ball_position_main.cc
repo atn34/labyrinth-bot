@@ -3,6 +3,7 @@
 
 #include "measure_ball_position.h"
 #include "perspective_transform.h"
+#include "ring_buffer.h"
 
 using namespace cv;
 
@@ -43,6 +44,9 @@ int main(int, char **) {
   kf.statePre.at<float>(4) = 0;
   kf.statePre.at<float>(5) = 0;
 
+  constexpr int cam_latency_in_frames = 4;
+  RingBuffer<Mat, cam_latency_in_frames + 1> estimate_buffer;
+
   for (;;) {
     cap >> src;
     if (!src.data) {
@@ -64,20 +68,23 @@ int main(int, char **) {
     measurement(1) = measured.y;
 
     kf.predict();
-    Mat estimated = kf.correct(measurement);
-    Point statePt(estimated.at<float>(0), estimated.at<float>(1));
+    Mat estimated = kf.correct(measurement).clone();
+    estimate_buffer.add(estimated);
 
-    float t_delta = 75 / 16; // approximate cam latency in frames
-    float x = estimated.at<float>(0);
-    float y = estimated.at<float>(1);
-    float vx = estimated.at<float>(2);
-    float vy = estimated.at<float>(3);
-    float ax = estimated.at<float>(4);
-    float ay = estimated.at<float>(5);
-    Point currentPt(x + t_delta * vx + 0.5 * t_delta * t_delta * ax,
-              y + t_delta * vy + 0.5 * t_delta * t_delta * ay);
+    if (estimate_buffer.size() == cam_latency_in_frames + 1) {
+      float t_delta = cam_latency_in_frames;
+      const Mat& old_estimate = estimate_buffer.get(0);
+      float x = old_estimate.at<float>(0);
+      float y = old_estimate.at<float>(1);
+      float vx = old_estimate.at<float>(2);
+      float vy = old_estimate.at<float>(3);
+      float ax = old_estimate.at<float>(4);
+      float ay = old_estimate.at<float>(5);
+      Point currentPointEstimate(x + t_delta * vx + 0.5 * t_delta * t_delta * ax,
+                      y + t_delta * vy + 0.5 * t_delta * t_delta * ay);
 
-    circle(transformed, currentPt, 10, Scalar(0, 0, 255));
+      circle(transformed, currentPointEstimate, 10, Scalar(0, 0, 255));
+    }
 
     imshow("Ball position", transformed);
 
