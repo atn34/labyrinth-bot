@@ -33,8 +33,8 @@ int main(int, char **) {
   setIdentity(kf.measurementMatrix);
   setIdentity(kf.processNoiseCov, Scalar::all(1e-4));
   setIdentity(kf.measurementNoiseCov, Scalar::all(1e1));
-  kf.measurementNoiseCov.at<float>(0, 0) = 1;
-  kf.measurementNoiseCov.at<float>(1, 1) = 1;
+  kf.measurementNoiseCov.at<float>(0, 0) = 4;
+  kf.measurementNoiseCov.at<float>(1, 1) = 4;
   setIdentity(kf.errorCovPost, Scalar::all(1e-1));
 
   kf.statePre.at<float>(0) = measurement(0);
