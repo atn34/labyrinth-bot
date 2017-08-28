@@ -5,7 +5,7 @@ set -euxo pipefail
 # opencv
 
 OPENCV_VERSION=3.3.0
-OPENCV_PREBUILT_TARBALL=opencv-${OPENCV_VERSION}-prebuilt
+OPENCV_PREBUILT_TARBALL=opencv-${OPENCV_VERSION}-prebuilt.tar.gz
 
 wget https://www.dropbox.com/s/eio2o4xajg605dx/opencv-3.3.0-prebuilt.tar.gz?dl=0 -O ${OPENCV_PREBUILT_TARBALL}
 tar -xvf ${OPENCV_PREBUILT_TARBALL}
