@@ -24,7 +24,7 @@ def includes_from_file(file_name):
     result = []
     with open(file_name, 'r') as fil:
         for line in fil:
-            if line.startswith('#include') or line.startswith('//') or line == '\n':
+            if line.startswith('#') or line.startswith('//') or line == '\n':
                 match = INCLUDE_RE.match(line)
                 if match:
                     include = match.groups()[0]
