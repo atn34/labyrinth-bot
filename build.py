@@ -59,7 +59,7 @@ class TransitiveIncludes(object):
         yield from self._read_includes(self.cc_file)
 
     def _read_includes(self, file_name):
-        if self.includes_from_cc:
+        if self.includes_from_cc and file_name.endswith('.cc'):
             if file_name not in self.files_processed:
                 self.files_processed.add(file_name)
             else:
