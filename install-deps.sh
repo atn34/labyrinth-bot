@@ -44,5 +44,5 @@ make -j8
 sudo make install
 popd
 popd
-rm libsocket-${LIBSOCKET_VERSION}
+rm -rf libsocket-${LIBSOCKET_VERSION}
 
