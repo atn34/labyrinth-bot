@@ -99,7 +99,7 @@ def headers_to_cflags(headers):
     cflags = set()
     for h_dep in headers:
         cflags |= header_to_cflags(h_dep)
-    return ' '.join(sorted(cflags) + ['-std=c++11', '-Wall', '-Werror', '-g'])
+    return ' '.join(sorted(cflags) + ['-std=c++14', '-Wall', '-Werror', '-g'])
 
 def headers_to_lflags(headers):
     @memoize

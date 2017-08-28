@@ -31,13 +31,18 @@ public:
   static constexpr char VERTICAL_STEP_CC = 0b00000100;
   static constexpr char VERTICAL_STEP_CCW = 0b00001000;
 
+  MotorClient() : pi_(std::make_unique<PiClient>()) {}
   MotorClient(std::unique_ptr<PiClientInterface> pi) : pi_(std::move(pi)) {}
   virtual ~MotorClient() = default;
 
   void step(int horizontal, int vertical) {
     assert(std::abs(horizontal) <= 16);
     assert(std::abs(vertical) <= 16);
-    std::string message(16, 0);
+    size_t message_len = std::max(std::abs(horizontal), std::abs(vertical));
+    if (message_len == 0) {
+      return;
+    }
+    std::string message(message_len, 0);
     if (horizontal < 0) {
       for (int i = 0; i < -horizontal; ++i) {
         message[i] |= HORIZONTAL_STEP_CCW;
@@ -49,14 +54,14 @@ public:
     }
     if (vertical < 0) {
       for (int i = 0; i < -vertical; ++i) {
-        message[i] |= VERTICAL_STEP_CCW;
+        message[i] |= VERTICAL_STEP_CC;
       }
     } else {
       for (int i = 0; i < vertical; ++i) {
-        message[i] |= VERTICAL_STEP_CC;
+        message[i] |= VERTICAL_STEP_CCW;
       }
     }
-    pi_->snd(message, 16);
+    pi_->snd(message, message_len);
   }
 
 private:
