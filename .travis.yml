@@ -1,6 +1,7 @@
 install:
   - sudo apt-get install build-essential cmake git libgtk2.0-dev libavcodec-dev libavformat-dev libswscale-dev
   - sudo ./install-deps.sh
+  - sudo ldconfig
 
 script:
   - make build
