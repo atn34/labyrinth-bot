@@ -119,7 +119,7 @@ def main():
         o_deps = list(object_deps(test_cc_file))
         sys.stdout.write(test_cc_file + '.exe: ' + test_cc_file + ' ' + ' '.join(chain(o_deps, header_deps(test_cc_file))) + '\n')
         sys.stdout.write('	g++ ' + test_cc_file + (' $(CFLAGS) %s ' % cflags) + ' '.join(o_deps) +
-                         ' %s -lgtest -lpthread -lgtest_main -o $@\n' % lflags)
+                         ' %s -lgtest -lgmock -lpthread -lgtest_main -o $@\n' % lflags)
 
     for main_cc_file in main_cc_files:
         o_deps = list(object_deps(main_cc_file))

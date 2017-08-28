@@ -19,12 +19,19 @@ if ! pkg-config --exists opencv ; then
     popd
 fi
 
-# gtest
+# googletest
 
-pushd /usr/src/gtest
-sudo cmake CMakeLists.txt
-sudo make
-sudo cp *.a /usr/lib
+GOOGLETEST_VERSION=1.8.0
+GOOGLETEST_TARBALL=googletest-${GOOGLETEST_VERSION}.tar.gz
+wget https://github.com/google/googletest/archive/release-${GOOGLETEST_VERSION}.tar.gz -O ${GOOGLETEST_TARBALL}
+tar -xvf ${GOOGLETEST_TARBALL}
+pushd googletest-release-${GOOGLETEST_VERSION}
+mkdir -p build
+pushd build
+cmake ..
+make -j8
+sudo make install
+popd
 popd
 
 # libsocket
