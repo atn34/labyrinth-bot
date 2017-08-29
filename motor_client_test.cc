@@ -20,34 +20,12 @@ TEST(MotorClient, Test) {
   std::string message;
   EXPECT_CALL(*mock_pi_client, snd(_, _)).WillRepeatedly(SaveArg<0>(&message));
 
-  motor_client.step(0, 0);
-  EXPECT_EQ("", message);
-
   motor_client.step(1, 0);
-  EXPECT_EQ(MotorClient::HORIZONTAL_STEP_CC, message[0]);
-
-  motor_client.step(-1, 0);
-  EXPECT_EQ(MotorClient::HORIZONTAL_STEP_CCW, message[0]);
-
-  motor_client.step(0, 1);
-  EXPECT_EQ(MotorClient::VERTICAL_STEP_CCW, message[0]);
-
-  motor_client.step(0, -1);
-  EXPECT_EQ(MotorClient::VERTICAL_STEP_CC, message[0]);
-
-  motor_client.step(1, 1);
-  EXPECT_EQ(MotorClient::HORIZONTAL_STEP_CC | MotorClient::VERTICAL_STEP_CCW,
-            message[0]);
-
-  motor_client.step(-1, 1);
-  EXPECT_EQ(MotorClient::HORIZONTAL_STEP_CCW | MotorClient::VERTICAL_STEP_CCW,
-            message[0]);
-
-  motor_client.step(1, -1);
-  EXPECT_EQ(MotorClient::HORIZONTAL_STEP_CC | MotorClient::VERTICAL_STEP_CC,
-            message[0]);
-
-  motor_client.step(-1, -1);
-  EXPECT_EQ(MotorClient::HORIZONTAL_STEP_CCW | MotorClient::VERTICAL_STEP_CC,
-            message[0]);
+  EXPECT_EQ(std::string("\x01\x00\x00\x00\x00\x00\x00\x00", 8), message);
+  motor_client.step(1, 8);
+  EXPECT_EQ(std::string("\x01\x00\x00\x00\x08\x00\x00\x00", 8), message);
+  motor_client.step(0, 0);
+  EXPECT_EQ(std::string("\x00\x00\x00\x00\x00\x00\x00\x00", 8), message);
+  motor_client.step(0, 8);
+  EXPECT_EQ(std::string("\x00\x00\x00\x00\x08\x00\x00\x00", 8), message);
 }

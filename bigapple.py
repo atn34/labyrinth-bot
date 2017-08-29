@@ -1,3 +1,4 @@
+from threading import Thread
 import RPi.GPIO as GPIO
 import struct
 import sys
@@ -20,31 +21,29 @@ class OutPin(object):
         self.val = 1 - self.val
         GPIO.output(self.bcm, self.val)
 
+delta_t = 0.001
+
 class Stepper(object):
 
     def __init__(self, direction_pin, step_pin):
         self.direction_pin = direction_pin
         self.step_pin = step_pin
+        self.value = None
 
-    def step_up(self):
-        self.direction_pin.set(1)
-        self.step_pin.switch()
+    def do_steps(self, value):
+        if value > 0:
+            self.direction_pin.set(1)
+        elif value < 0:
+            self.direction_pin.set(0)
+            value = -value
+        else:
+            return
+        for _ in xrange(value):
+            self.step_pin.switch()
+            time.sleep(delta_t)
 
-    def step_down(self):
-        self.direction_pin.set(0)
-        self.step_pin.switch()
-
-delta_t = 0.001
-
-# Instructions
-
-HORIZONTAL_STEP_CC  = 0b00000001
-HORIZONTAL_STEP_CCW = 0b00000010
-VERTICAL_STEP_CC    = 0b00000100
-VERTICAL_STEP_CCW   = 0b00001000
-
-DirectionPinValues = [0, 0]
-StepPinValues = [0, 0]
+HORIZONTAL = 0
+VERTICAL = 1
 
 try:
     GPIO.setmode(GPIO.BCM)
@@ -53,19 +52,16 @@ try:
     vertical_stepper = Stepper(OutPin(24), OutPin(22))
 
     while True:
-        raw_instruction = sys.stdin.read(1)
-        if not raw_instruction:
+        instruction = sys.stdin.read(8)
+        if not instruction:
             break
-        (instruction,) = struct.unpack('B', raw_instruction)
-        if instruction & HORIZONTAL_STEP_CC:
-            horizontal_stepper.step_up()
-        if instruction & HORIZONTAL_STEP_CCW:
-            horizontal_stepper.step_down()
-        if instruction & VERTICAL_STEP_CC:
-            vertical_stepper.step_up()
-        if instruction & VERTICAL_STEP_CCW:
-            vertical_stepper.step_down()
-        time.sleep(delta_t)
+        (motor, value) = struct.unpack('ii', instruction)
+        if motor == HORIZONTAL:
+            thread = Thread(target=horizontal_stepper.do_steps, args=(value,))
+            thread.start()
+        elif motor == VERTICAL:
+            thread = Thread(target=vertical_stepper.do_steps, args=(-value,))
+            thread.start()
 
 finally:
     GPIO.cleanup()
