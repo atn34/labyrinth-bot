@@ -30,10 +30,10 @@ TEST(MotorClient, Test) {
   EXPECT_EQ(MotorClient::HORIZONTAL_STEP_CCW, message[0]);
 
   motor_client.step(0, 1);
-  EXPECT_EQ(MotorClient::VERTICAL_STEP_CC, message[0]);
+  EXPECT_EQ(MotorClient::VERTICAL_STEP_CCW, message[0]);
 
   motor_client.step(0, -1);
-  EXPECT_EQ(MotorClient::VERTICAL_STEP_CCW, message[0]);
+  EXPECT_EQ(MotorClient::VERTICAL_STEP_CC, message[0]);
 
   motor_client.step(1, 1);
   EXPECT_EQ(MotorClient::HORIZONTAL_STEP_CC | MotorClient::VERTICAL_STEP_CCW,
