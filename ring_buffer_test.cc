@@ -12,10 +12,12 @@ TEST(RingBuffer, Test) {
   for (const auto& i : {1, 2, 3, 4}) {
     buffer.add(i);
   }
-  EXPECT_EQ(0, buffer.get(0));
+  EXPECT_EQ(4, buffer.get(0));
+  EXPECT_EQ(0, buffer.get(4));
   EXPECT_EQ(5, buffer.size());
 
   buffer.add(6);
-  EXPECT_EQ(1, buffer.get(0));
+  EXPECT_EQ(6, buffer.get(0));
+  EXPECT_EQ(1, buffer.get(4));
   EXPECT_EQ(5, buffer.size());
 }

@@ -19,12 +19,16 @@ public:
     }
   }
 
+  /// get(0) gets the most recent entry.
   const T& get(int i) const {
+    assert (size_ > 0);
     assert (i < size_);
-    return contents_[(front_ + i) % CAPACITY];
+    return contents_[(front_ + size_ - i - 1) % CAPACITY];
   }
 
   int size() { return size_; }
+
+  bool full() { return size_ == CAPACITY; }
 
 private:
   int front_ = 0;
