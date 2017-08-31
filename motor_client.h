@@ -29,7 +29,7 @@ public:
   static constexpr int HORIZONTAL = 0;
   static constexpr int VERTICAL = 1;
 
-  MotorClient() : pi_(std::make_unique<PiClient>()) {}
+  MotorClient() : pi_(std::unique_ptr<PiClient>(new PiClient)) {}
   MotorClient(std::unique_ptr<PiClientInterface> pi) : pi_(std::move(pi)) {}
   virtual ~MotorClient() = default;
 
