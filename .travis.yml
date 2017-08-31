@@ -6,3 +6,6 @@ install:
 script:
   - make build
   - make test
+
+cache:
+  directories: opencv-3.3.0-prebuilt
