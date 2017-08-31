@@ -4,7 +4,7 @@
 #include "opencv2/opencv.hpp"
 
 constexpr int kBallBlockSize = 16 * 2 + 3;
-constexpr int kBallThreshC = 102 - 255;
+constexpr int kBallThreshC = 130 - 255;
 
 class ThresholdBall {
 public:

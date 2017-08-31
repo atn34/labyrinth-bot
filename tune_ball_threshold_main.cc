@@ -13,7 +13,7 @@ int main(int, char **) {
   namedWindow("Perspective Transform", CV_WINDOW_AUTOSIZE);
 
   int low = 16;
-  int high = 102;
+  int high = 130;
   createTrackbar("low", "Perspective Transform", &low, 255);
   createTrackbar("high", "Perspective Transform", &high, 255);
 
