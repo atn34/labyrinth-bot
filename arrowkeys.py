@@ -14,13 +14,13 @@ s = socket.socket(
     socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("bigapple", 10000))
 
-HORIZONTAL_STEP_CC  = 0b00000001
-HORIZONTAL_STEP_CCW = 0b00000010
-VERTICAL_STEP_CC    = 0b00000100
-VERTICAL_STEP_CCW   = 0b00001000
+HORIZONTAL = 0
+VERTICAL = 1
 
-def write_instruction(instruction):
-    s.sendall(struct.pack('B', instruction))
+def write_instruction(motor, value):
+    s.sendall(struct.pack('ii', motor, value))
+
+stepper_values = [0, 0]
 
 while True:
     for event in pygame.event.get():
@@ -33,13 +33,16 @@ while True:
     instruction = 0b00000000
 
     if keys_pressed[pygame.K_LEFT]:
-        instruction |= HORIZONTAL_STEP_CCW
+        stepper_values[HORIZONTAL] -= 1
+        write_instruction(HORIZONTAL, stepper_values[HORIZONTAL])
     if keys_pressed[pygame.K_RIGHT]:
-        instruction |= HORIZONTAL_STEP_CC
+        stepper_values[HORIZONTAL] += 1
+        write_instruction(HORIZONTAL, stepper_values[HORIZONTAL])
     if keys_pressed[pygame.K_UP]:
-        instruction |= VERTICAL_STEP_CC
+        stepper_values[VERTICAL] -= 1
+        write_instruction(VERTICAL, stepper_values[VERTICAL])
     if keys_pressed[pygame.K_DOWN]:
-        instruction |= VERTICAL_STEP_CCW
-    if instruction != 0:
-        write_instruction(instruction)
+        stepper_values[VERTICAL] += 1
+        write_instruction(VERTICAL, stepper_values[VERTICAL])
+
     time.sleep(0.001)

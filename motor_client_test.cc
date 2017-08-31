@@ -20,12 +20,12 @@ TEST(MotorClient, Test) {
   std::string message;
   EXPECT_CALL(*mock_pi_client, snd(_, _)).WillRepeatedly(SaveArg<0>(&message));
 
-  motor_client.step(1, 0);
+  motor_client.step_to(1, 0);
   EXPECT_EQ(std::string("\x01\x00\x00\x00\x00\x00\x00\x00", 8), message);
-  motor_client.step(1, 8);
+  motor_client.step_to(1, 8);
   EXPECT_EQ(std::string("\x01\x00\x00\x00\x08\x00\x00\x00", 8), message);
-  motor_client.step(0, 0);
+  motor_client.step_to(0, 0);
   EXPECT_EQ(std::string("\x00\x00\x00\x00\x00\x00\x00\x00", 8), message);
-  motor_client.step(0, 8);
+  motor_client.step_to(0, 8);
   EXPECT_EQ(std::string("\x00\x00\x00\x00\x08\x00\x00\x00", 8), message);
 }

@@ -33,7 +33,7 @@ public:
   MotorClient(std::unique_ptr<PiClientInterface> pi) : pi_(std::move(pi)) {}
   virtual ~MotorClient() = default;
 
-  void step(int motor, int value) {
+  void step_to(int motor, int value) {
     struct Message {
         int motor;
         int value;

@@ -1,11 +1,12 @@
-from threading import Thread
-import RPi.GPIO as GPIO
 import struct
 import sys
 import time
+from threading import Condition, Lock, Thread
+
+import RPi.GPIO as GPIO
+
 
 class OutPin(object):
-
     def __init__(self, bcm):
         self.bcm = bcm
         GPIO.setup(self.bcm, GPIO.OUT)
@@ -21,47 +22,80 @@ class OutPin(object):
         self.val = 1 - self.val
         GPIO.output(self.bcm, self.val)
 
-delta_t = 0.001
+
+DELTA_T = 0.001
+
 
 class Stepper(object):
-
     def __init__(self, direction_pin, step_pin):
         self.direction_pin = direction_pin
         self.step_pin = step_pin
-        self.value = None
+        self.current_value = 0
+        self.target_value = 0
+        self.lock = Lock()
+        self.cv = Condition(self.lock)
+        self.running = True
 
-    def do_steps(self, value):
-        if value > 0:
-            self.direction_pin.set(1)
-        elif value < 0:
-            self.direction_pin.set(0)
-            value = -value
-        else:
-            return
-        for _ in xrange(value):
-            self.step_pin.switch()
-            time.sleep(delta_t)
+    def stop(self):
+        with self.lock:
+            self.running = False
+            self.cv.notify()
+
+    def set_target_value(self, value):
+        with self.lock:
+            self.target_value = value
+            self.cv.notify()
+
+    def move_to_target_forever(self):
+        with self.lock:
+            while self.running:
+                while self.running and self.current_value == self.target_value:
+                    self.cv.wait()
+                while self.running and self.current_value != self.target_value:
+                    if self.current_value > self.target_value:
+                        self.direction_pin.set(0)
+                        self.current_value -= 1
+                    else:
+                        self.direction_pin.set(1)
+                        self.current_value += 1
+                    self.step_pin.switch()
+                    self.lock.release()
+                    time.sleep(DELTA_T)
+                    self.lock.acquire()
+
 
 HORIZONTAL = 0
 VERTICAL = 1
 
-try:
-    GPIO.setmode(GPIO.BCM)
+def main():
+    try:
+        GPIO.setmode(GPIO.BCM)
 
-    horizontal_stepper = Stepper(OutPin(6), OutPin(16))
-    vertical_stepper = Stepper(OutPin(24), OutPin(22))
+        steppers = [
+            Stepper(OutPin(6), OutPin(16)), # HORIZONTAL
+            Stepper(OutPin(24), OutPin(22)), # VERTICAL
+        ]
 
-    while True:
-        instruction = sys.stdin.read(8)
-        if not instruction:
-            break
-        (motor, value) = struct.unpack('ii', instruction)
-        if motor == HORIZONTAL:
-            thread = Thread(target=horizontal_stepper.do_steps, args=(value,))
-            thread.start()
-        elif motor == VERTICAL:
-            thread = Thread(target=vertical_stepper.do_steps, args=(-value,))
+        threads = [Thread(target=stepper.move_to_target_forever) for stepper in steppers]
+
+        for thread in threads:
             thread.start()
 
-finally:
-    GPIO.cleanup()
+        while True:
+            instruction = sys.stdin.read(8)
+            if not instruction:
+                break
+            (motor, target_value) = struct.unpack('ii', instruction)
+            assert motor in (HORIZONTAL, VERTICAL)
+            steppers[motor].set_target_value(target_value)
+
+    finally:
+        GPIO.cleanup()
+        for stepper in steppers:
+            stepper.stop()
+        for thread in threads:
+            thread.join()
+
+
+if __name__ == "__main__":
+    main()
