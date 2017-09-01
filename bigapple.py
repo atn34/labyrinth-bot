@@ -1,3 +1,4 @@
+import socket
 import struct
 import sys
 import time
@@ -68,6 +69,15 @@ HORIZONTAL = 0
 VERTICAL = 1
 
 def main():
+
+    # Socket stuff based on
+    # https://stackoverflow.com/questions/15869158/python-socket-listening
+    s = socket.socket(socket.AF_INET,
+                      socket.SOCK_STREAM)
+    port = 10000
+    s.bind(('', port))
+    s.listen(1)
+
     try:
         GPIO.setmode(GPIO.BCM)
 
@@ -82,12 +92,18 @@ def main():
             thread.start()
 
         while True:
-            instruction = sys.stdin.read(8)
-            if not instruction:
-                break
-            (motor, target_value) = struct.unpack('ii', instruction)
-            assert motor in (HORIZONTAL, VERTICAL)
-            steppers[motor].set_target_value(target_value)
+            clientSocket, addr = s.accept()
+            print 'got a connection from ' + str(addr)
+            while True:
+                instruction = clientSocket.recv(8)
+                if not instruction:
+                    break
+                (motor, target_value) = struct.unpack('ii', instruction)
+                assert motor in (HORIZONTAL, VERTICAL)
+                steppers[motor].set_target_value(target_value)
+            for stepper in steppers:
+                stepper.set_target_value(0)
+                stepper.set_target_value(0)
 
     finally:
         GPIO.cleanup()
