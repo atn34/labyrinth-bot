@@ -1,6 +1,5 @@
 #include "threshold_ball.h"
 
-#include "connected_components.h"
 #include "mask_util.h"
 
 using namespace cv;
@@ -8,9 +7,7 @@ using namespace cv;
 namespace {
 
 const Mat &get_ball_mask() {
-  static const Mat &out = []() {
-    return *get_mask_from_file("board.png").release();
-  }();
+  static const Mat &out = *get_mask_from_file("board.png").release();
   return out;
 }
 

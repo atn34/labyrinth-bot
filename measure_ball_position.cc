@@ -20,14 +20,14 @@ bool MeasureBallPosition(Mat perspective_transformed,
   std::vector<ComponentInfo> infos;
   int my_label = -1;
 
-  visitor.Visit([&](int row, int col, int label) {
+  visitor.Visit([&](Point p, int label) {
     if (my_label != label) {
       ++my_label;
       infos.push_back(ComponentInfo{});
     }
     auto &info = infos.back();
-    info.ys += (static_cast<float>(row));
-    info.xs += (static_cast<float>(col));
+    info.ys += (static_cast<float>(p.y));
+    info.xs += (static_cast<float>(p.x));
     ++info.size;
   });
 

@@ -26,7 +26,7 @@ TEST(FourCorners, Test) {
     ConnectedComponentsVisitor visitor(&threshed);
 
     int num_connected_components = 0;
-    visitor.Visit([&](int row, int col, int label) {
+    visitor.Visit([&](Point, int label) {
       num_connected_components = label + 1;
     });
 

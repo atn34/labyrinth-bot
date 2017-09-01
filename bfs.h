@@ -14,10 +14,10 @@ public:
         marked_for_visiting_(marked_for_visiting), to_visit_(to_visit) {}
   virtual ~Bfs() = default;
 
-  template <typename Lambda> void bfs(int node, Lambda f) {
+  template <typename Lambda> void bfs(cv::Point start, Lambda f) {
     to_visit_->clear();
-    to_visit_->push_back(node);
-    marked_for_visiting_->insert(node);
+    to_visit_->push_back(point_to_node(start));
+    marked_for_visiting_->insert(point_to_node(start));
     while (to_visit_->size() > 0) {
       int current = to_visit_->front();
       to_visit_->pop_front();
@@ -38,18 +38,34 @@ public:
           }
           to_visit_->push_back(neighbor);
           marked_for_visiting_->insert(neighbor);
-          f(r, c, /* parent */ current);
+
+          if (!f(cv::Point(c, r), cv::Point(col, row))) {
+              return;
+          }
         }
       }
     }
   }
 
 private:
+  int point_to_node(const cv::Point &p) { return p.y * img_->cols + p.x; }
+  cv::Point node_to_point(int n) {
+    return cv::Point(n / img_->cols, n % img_->cols);
+  }
+
   const cv::Mat *img_;
   int num_rows_;
   int num_cols_;
   std::unordered_set<int> *marked_for_visiting_;
   std::deque<int> *to_visit_;
 };
+
+template <typename Lambda>
+void DoBfs(const cv::Mat *img, cv::Point start, Lambda f) {
+    std::unordered_set<int> marked_for_visiting;
+    std::deque<int> to_visit;
+    Bfs bfs(img, &marked_for_visiting, &to_visit);
+    bfs.bfs(start, f);
+}
 
 #endif /* BFS_H */

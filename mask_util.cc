@@ -12,7 +12,7 @@ std::unique_ptr<Mat> get_mask_from_file(const std::string &file_name) {
       if (point[0] == 220 && point[1] == 0 && point[2] == 255) {
         mask->at<uchar>(r, c) = 0;
       } else {
-        mask->at<uchar>(r, c) = 1;
+        mask->at<uchar>(r, c) = 255;
       }
     }
   }

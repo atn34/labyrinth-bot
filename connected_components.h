@@ -29,7 +29,10 @@ public:
           continue;
         }
         Bfs bfs(img_, &marked_for_visiting_, &to_visit_);
-        bfs.bfs(node, [&](int row, int col, int parent) { f(row, col, component_label_); });
+        bfs.bfs(cv::Point(col, row), [&](cv::Point p, cv::Point /* parent */) {
+          f(p, component_label_);
+          return true;
+        });
         ++component_label_;
       }
     }
