@@ -23,7 +23,6 @@ public:
       to_visit_->pop_front();
       int row = current / num_cols_;
       int col = current % num_cols_;
-      f(row, col);
       for (int r = row - 1; r <= row + 1; ++r) {
         for (int c = col - 1; c <= col + 1; ++c) {
           if (img_->at<uchar>(row, col) == 0) {
@@ -39,6 +38,7 @@ public:
           }
           to_visit_->push_back(neighbor);
           marked_for_visiting_->insert(neighbor);
+          f(r, c, /* parent */ current);
         }
       }
     }
