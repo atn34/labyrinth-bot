@@ -126,22 +126,20 @@ def object_file_rule(cc_file):
 def test_file_rule(test_cc_file):
     assert test_cc_file.endswith('_test.cc')
     o_deps = list(object_deps(test_cc_file))
-    h_deps = list(header_deps(test_cc_file))
-    cflags = headers_to_cflags(h_deps)
     lflags = headers_to_lflags(header_deps(test_cc_file, includes_from_cc=True))
-    depends = test_cc_file + '.exe: ' + test_cc_file + ' ' + ' '.join(chain(o_deps, filter(os.path.isfile, h_deps)))
-    build_command = ('\tg++ ' + test_cc_file + (' $(CFLAGS) %s ' % cflags) + ' '.join(o_deps) +
+    test_o_file = os.path.splitext(test_cc_file)[0] + '.o'
+    depends = test_cc_file + '.exe: ' + test_o_file + ' ' + ' '.join(o_deps)
+    build_command = ('\tg++ ' + test_o_file + ' $(CFLAGS) ' + ' '.join(o_deps) +
                       ' %s -lgmock -lpthread -lgmock_main -o $@\n' % lflags)
     return '\n'.join((depends, build_command))
 
 def main_file_rule(main_cc_file):
     assert main_cc_file.endswith('_main.cc')
     o_deps = list(object_deps(main_cc_file))
-    h_deps = list(header_deps(main_cc_file))
-    cflags = headers_to_cflags(h_deps)
     lflags = headers_to_lflags(header_deps(main_cc_file, includes_from_cc=True))
-    depends = main_cc_file + '.exe: ' + main_cc_file + ' ' + ' '.join(chain(o_deps, filter(os.path.isfile, h_deps)))
-    build_command = ('\tg++ ' + main_cc_file + (' $(CFLAGS) %s ' % cflags) + ' '.join(o_deps) +
+    main_o_file = os.path.splitext(main_cc_file)[0] + '.o'
+    depends = main_cc_file + '.exe: ' + main_o_file + ' ' + ' '.join(o_deps)
+    build_command = ('\tg++ ' + main_o_file + ' $(CFLAGS) ' + ' '.join(o_deps) +
                       ' %s -o $@\n' % lflags)
     return '\n'.join((depends, build_command))
 
@@ -151,14 +149,12 @@ def main():
     main_cc_files = set()
     for f in subprocess.check_output(
             r'find . -type f -name "*.cc" | sort', shell=True).decode('utf-8').splitlines():
+        if f.endswith('.cc'):
+            cc_files.add(f)
         if f.endswith('_test.cc'):
             test_cc_files.add(f)
         elif f.endswith('_main.cc'):
             main_cc_files.add(f)
-        elif f.endswith('.cc'):
-            cc_files.add(f)
-        else:
-            assert False
 
     # To make diffing build.py outputs easier
     cc_files = sorted(cc_files)
