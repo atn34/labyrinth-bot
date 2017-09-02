@@ -3,8 +3,6 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
 
-
-#include "third_party/MiniPID.h"
 #include "ball_state.h"
 #include "measure_ball_position.h"
 #include "motor_client.h"
@@ -25,11 +23,10 @@ int main(int, char **) {
   BallState ball_state;
 
   Subgoals sub_goals;
-  Point motors(0, 0);
-  MotorClient motor_client;
+  std::unique_ptr<MotorClient> motor_client;
 
-  MiniPID x_pid = MiniPID(1.15, 0.01, 15);
-  MiniPID y_pid = MiniPID(1.15, 0.01, 15);
+  Point goal;
+  Point accumulated_error;
 
   for (;;) {
     cap >> src;
@@ -40,14 +37,30 @@ int main(int, char **) {
     flip(src, src, -1);
 
     if (!PerspectiveTransform(src, &transformed)) {
-      std::cout << "perspective transform failed" << std::endl;
-      break;
+        if (motor_client != nullptr) {
+            std::cout << "perspective transform failed" << std::endl;
+            motor_client.reset();
+            ball_state.reset();
+            sub_goals.reset();
+            cvWaitKey(0);
+        }
+        continue;
     }
 
     Point measured;
     if (!MeasureBallPosition(transformed, &measured)) {
-      std::cout << "finding ball failed" << std::endl;
-      break;
+        if (motor_client != nullptr) {
+            std::cout << "finding ball failed" << std::endl;
+            motor_client.reset();
+            ball_state.reset();
+            sub_goals.reset();
+            cvWaitKey(0);
+        }
+        continue;
+    }
+
+    if (motor_client == nullptr) {
+        motor_client.reset(new MotorClient);
     }
 
     ball_state.update(measured);
@@ -64,15 +77,42 @@ int main(int, char **) {
     float ax = ball_state.acceleration().x;
     float ay = ball_state.acceleration().y;
 
-    bool ball_at_rest = vx * vx + vy * vy < 0.1 && ax * ax + ay * ay < 0.001;
+    bool ball_at_rest = vx * vx + vy * vy < 0.2 && ax * ax + ay * ay < 0.001;
 
-    Point goal = sub_goals.next_goal(Point(x, y));
+    float px;
+    float py;
+    float dx;
+    float dy;
+    float ex = goal.x - x;
+    float ey = goal.y - y;
+    float ix;
+    float iy;
 
-    motors.x = x_pid.getOutput(x, goal.x);
-    motors.y = y_pid.getOutput(y, goal.y);
+    if (ball_at_rest) {
+        px = 0;
+        py = 0;
+        dx = 0;
+        dy = 0;
+        ix = 0.02;
+        iy = 0.03;
+        accumulated_error.x += ex;
+        accumulated_error.y += ey;
+    } else {
+        px = 1.8;
+        py = 1.9;
+        dx = 6;
+        dy = 10;
+        ix = 0;
+        iy = 0;
+    }
 
-    motor_client.step_to(MotorClient::HORIZONTAL, motors.x);
-    motor_client.step_to(MotorClient::VERTICAL, motors.y);
+    goal = sub_goals.next_goal(Point(x, y));
+
+    int motor_x = ex * px + accumulated_error.x * ix - vx * dx;
+    int motor_y = ey * py + accumulated_error.y * iy - vy * dy;
+
+    motor_client->step_to(MotorClient::HORIZONTAL, motor_x);
+    motor_client->step_to(MotorClient::VERTICAL, motor_y);
 
     circle(transformed, Point(x, y), 10,
            ball_at_rest ? Scalar(255, 0, 0) : Scalar(0, 0, 255));
@@ -81,5 +121,6 @@ int main(int, char **) {
 
     imshow("Controller", transformed);
   }
+
   return 0;
 }

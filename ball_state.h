@@ -18,6 +18,8 @@ public:
 
   void update(cv::Point measured);
 
+  void reset();
+
   cv::Point2f position() const {
     assert(initialized_);
     return cv::Point2f(estimated_.at<float>(0), estimated_.at<float>(1));

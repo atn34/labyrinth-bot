@@ -10,6 +10,8 @@ public:
 
   cv::Point next_goal(cv::Point ball_pos);
 
+  void reset() { next_goal_index_ = 0; }
+
 private:
   int next_goal_index_ = 0;
 };

@@ -36,3 +36,8 @@ void BallState::initialize(Point measured) {
   setIdentity(kf_.measurementNoiseCov, Scalar::all(1e1));
   setIdentity(kf_.errorCovPost, Scalar::all(1e-1));
 }
+
+void BallState::reset() {
+    initialized_ = false;
+    kf_.init(6, 2);
+}
