@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <unordered_map>
 
+#include "Box2D/Box2D.h"
+
 #include "bfs.h"
 #include "mask_util.h"
 
