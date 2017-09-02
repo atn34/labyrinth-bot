@@ -39,7 +39,7 @@ const std::vector<Point> &subgoals() {
     for (auto p = parents.find(finish);
          p != parents.end() && p->second != start;
          p = parents.find(p->second)) {
-      if (iter++ % 10 == 0) {
+      if (iter++ % 5 == 0) {
         out->push_back(p->second);
       }
     }
