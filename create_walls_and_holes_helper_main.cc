@@ -73,12 +73,20 @@ int main(int argc, char *argv[]) {
   Mat with_cursors;
   for (;;) {
     with_cursors = board.clone();
+    Vec2 mouse = Vec2FromInt(mouse_state.mouse.x, mouse_state.mouse.y);
     if (mouse_state.selecting_rectangle) {
-      rectangle(with_cursors, mouse_state.upper_left, mouse_state.mouse, Scalar(0, 0, 0));
+      rectangle(with_cursors, mouse_state.upper_left, mouse_state.mouse,
+                Scalar(0, 0, 0));
     } else {
-      Vec2 mouse = Vec2FromInt(mouse_state.mouse.x, mouse_state.mouse.y);
-      Vec2 subgoal = subgoals.next_goal(mouse);
-      circle(with_cursors, Point(subgoal.x, subgoal.y), 10, Scalar(0, 0, 0));
+      circle(with_cursors, Point(mouse.x, mouse.y), 10, Scalar(0, 0, 0));
+      Vec2 subgoal = subgoals.next_goal(
+          mouse, [&](float theta, const ObstacleOrGoal *obstacle) {
+            Vec2 target =
+                mouse + UnitVec2FromTheta(theta) * obstacle->dist_to_impact;
+            line(with_cursors, Point(mouse.x, mouse.y),
+                 Point(target.x, target.y), Scalar(0, 0, 0));
+          });
+      circle(with_cursors, Point(subgoal.x, subgoal.y), 10, Scalar(0, 255, 0));
     }
     imshow("create walls", with_cursors);
 

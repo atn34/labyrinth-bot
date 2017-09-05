@@ -106,16 +106,18 @@ void ObstacleOrGoal::UpdateDistToImpact(Vec2 ball_pos, float theta) {
   assert(type != kGoal);
   if (type == kLineSegment) {
     dist_to_impact = DistanceToImpact(Circle{ball_pos, kBallRadius},
-                                      Vec2{cosf(theta), sinf(theta)}, segment);
+                                      UnitVec2FromTheta(theta), segment);
   } else if (type == kCircle) {
     dist_to_impact = DistanceToImpact(Circle{ball_pos, kBallRadius},
-                                      Vec2{cosf(theta), sinf(theta)}, circle);
+                                      UnitVec2FromTheta(theta), circle);
   }
 }
 
 // Relies on the assumption that no pair of obstacles intersect, and no goals
 // intersect any obstacles.
-Vec2 Subgoals::next_goal(Vec2 ball_pos) {
+Vec2 Subgoals::next_goal(
+    Vec2 ball_pos,
+    std::function<void(float, const ObstacleOrGoal *)> debug_callback) {
   obstacles_and_goals_.clear();
   angles_of_interest_.clear();
   obstacles_by_dist_to_impact_.clear();
@@ -151,9 +153,20 @@ Vec2 Subgoals::next_goal(Vec2 ball_pos) {
     if (pair.second->type == kGoal) {
       const ObstacleOrGoal *goal = pair.second;
 
-      const auto* first_obstacle = obstacles_by_dist_to_impact_.size() > 0 ?
-          obstacles_by_dist_to_impact_.begin()->second : nullptr;
-      if (first_obstacle == nullptr || goal->dist_to_impact < first_obstacle->dist_to_impact) {
+      auto *first_obstacle = obstacles_by_dist_to_impact_.size() > 0
+                                 ? obstacles_by_dist_to_impact_.begin()->second
+                                 : nullptr;
+      if (debug_callback != nullptr && first_obstacle != nullptr) {
+        debug_callback(theta, first_obstacle);
+      }
+      if (first_obstacle != nullptr) {
+        first_obstacle->UpdateDistToImpact(ball_pos, theta);
+        if (first_obstacle->dist_to_impact < goal->dist_to_impact &&
+            goal->goal_index < best_subgoal_index) {
+          best_subgoal_index = goal->goal_index;
+          best_subgoal = goal->goal;
+        }
+      } else {
         if (goal->goal_index < best_subgoal_index) {
           best_subgoal_index = goal->goal_index;
           best_subgoal = goal->goal;
@@ -166,7 +179,8 @@ Vec2 Subgoals::next_goal(Vec2 ball_pos) {
       } else {
         // Update dist_to_impact for current closest obstacle if there is one.
         if (obstacles_by_dist_to_impact_.size() > 0) {
-          ObstacleOrGoal *closest = obstacles_by_dist_to_impact_.begin()->second;
+          ObstacleOrGoal *closest =
+              obstacles_by_dist_to_impact_.begin()->second;
           obstacles_by_dist_to_impact_.erase(
               obstacles_by_dist_to_impact_.begin());
           closest->UpdateDistToImpact(ball_pos, theta);

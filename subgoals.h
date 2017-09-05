@@ -37,7 +37,9 @@ public:
   Subgoals() = default;
   virtual ~Subgoals() = default;
 
-  Vec2 next_goal(Vec2 ball_pos);
+  Vec2 next_goal(Vec2 ball_pos,
+                 std::function<void(float, const ObstacleOrGoal *)>
+                     debug_callback = nullptr);
 
 private:
   std::vector<ObstacleOrGoal> obstacles_and_goals_;

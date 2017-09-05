@@ -26,8 +26,8 @@ int main(int, char **) {
   Subgoals sub_goals;
   std::unique_ptr<MotorClient> motor_client;
 
-  Vec2 goal;
-  Vec2 accumulated_error;
+  Vec2 goal = {};
+  Vec2 accumulated_error = {};
 
   const std::vector<Vec2> problem_holes = {
       {130, 98},
