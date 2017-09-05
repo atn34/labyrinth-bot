@@ -8,8 +8,7 @@ using namespace cv;
 
 int main(int, char **) {
   VideoCapture cap(1);
-  if (!cap.isOpened())
-    return -1;
+  if (!cap.isOpened()) return -1;
   namedWindow("Perspective Transform", CV_WINDOW_AUTOSIZE);
 
   int low = 16;
@@ -29,7 +28,7 @@ int main(int, char **) {
     flip(src, src, -1);
 
     if (!PerspectiveTransform(src, &transformed)) {
-        continue;
+      continue;
     }
 
     ThresholdBall threshold_ball(low * 2 + 3, high - 255);
@@ -44,4 +43,3 @@ int main(int, char **) {
   }
   return 0;
 }
-

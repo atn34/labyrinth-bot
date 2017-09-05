@@ -7,25 +7,25 @@
 #include "libsocket/inetclientstream.hpp"
 
 class PiClientInterface {
-public:
+ public:
   virtual ~PiClientInterface() {}
   virtual void snd(std::string buffer, size_t len) = 0;
 };
 
 class PiClient : public PiClientInterface {
-public:
+ public:
   PiClient() : pi_("bigapple", "10000", LIBSOCKET_IPv4) {}
 
   void snd(std::string buffer, size_t len) override {
     pi_.snd(buffer.data(), len);
   }
 
-private:
+ private:
   libsocket::inet_stream pi_;
 };
 
 class MotorClient {
-public:
+ public:
   static constexpr int HORIZONTAL = 0;
   static constexpr int VERTICAL = 1;
 
@@ -35,8 +35,8 @@ public:
 
   void step_to(int motor, int value) {
     struct Message {
-        int motor;
-        int value;
+      int motor;
+      int value;
     };
     Message message;
     message.motor = motor;
@@ -45,7 +45,7 @@ public:
     pi_->snd(serialized, sizeof(Message));
   }
 
-private:
+ private:
   std::unique_ptr<PiClientInterface> pi_;
 };
 

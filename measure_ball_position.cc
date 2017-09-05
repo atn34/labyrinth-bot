@@ -1,15 +1,13 @@
 #include "measure_ball_position.h"
 
 #include "connected_components.h"
-#include "geometry.h"   
+#include "geometry.h"
 #include "threshold_ball.h"
-
 
 using namespace cv;
 
-bool MeasureBallPosition(Mat perspective_transformed,
-                         Point *measurement) {
-  static const ThresholdBall& threshold_ball = *new ThresholdBall;
+bool MeasureBallPosition(Mat perspective_transformed, Point *measurement) {
+  static const ThresholdBall &threshold_ball = *new ThresholdBall;
   Mat masked = threshold_ball.Threshold(perspective_transformed);
 
   ConnectedComponentsVisitor visitor(&masked);

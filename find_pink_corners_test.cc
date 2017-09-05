@@ -26,9 +26,8 @@ TEST(FourCorners, Test) {
     ConnectedComponentsVisitor visitor(&threshed);
 
     int num_connected_components = 0;
-    visitor.Visit([&](Vec2 /* p */ , int label) {
-      num_connected_components = label + 1;
-    });
+    visitor.Visit(
+        [&](Vec2 /* p */, int label) { num_connected_components = label + 1; });
 
     EXPECT_EQ(4, num_connected_components) << filename;
   }

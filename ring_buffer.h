@@ -1,8 +1,9 @@
 #ifndef RING_BUFFER_H
 #define RING_BUFFER_H
 
-template <typename T, int CAPACITY> class RingBuffer {
-public:
+template <typename T, int CAPACITY>
+class RingBuffer {
+ public:
   static_assert(CAPACITY > 0, "CAPACITY must be positive and nonzero");
 
   RingBuffer() { contents_.resize(CAPACITY); }
@@ -20,9 +21,9 @@ public:
   }
 
   /// get(0) gets the most recent entry.
-  const T& get(int i) const {
-    assert (size_ > 0);
-    assert (i < size_);
+  const T &get(int i) const {
+    assert(size_ > 0);
+    assert(i < size_);
     return contents_[(front_ + size_ - i - 1) % CAPACITY];
   }
 
@@ -30,7 +31,7 @@ public:
 
   bool full() { return size_ == CAPACITY; }
 
-private:
+ private:
   int front_ = 0;
   int size_ = 0;
   std::vector<T> contents_;

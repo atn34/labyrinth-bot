@@ -8,7 +8,7 @@
 // Kalman filter usage based on
 // http://opencvexamples.blogspot.com/2014/01/kalman-filter-implementation-tracking.html
 class BallState {
-public:
+ public:
   BallState()
       : kf_(/* dimension of state */ 6,
             /* dimension of measurement */ 2),
@@ -33,7 +33,7 @@ public:
     return cv::Point2f(estimated_.at<float>(4), estimated_.at<float>(5));
   }
 
-private:
+ private:
   void initialize(cv::Point measured);
 
   cv::KalmanFilter kf_;

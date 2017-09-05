@@ -9,7 +9,7 @@ TEST(RingBuffer, Test) {
   EXPECT_EQ(0, buffer.get(0));
   EXPECT_EQ(1, buffer.size());
 
-  for (const auto& i : {1, 2, 3, 4}) {
+  for (const auto &i : {1, 2, 3, 4}) {
     buffer.add(i);
   }
   EXPECT_EQ(4, buffer.get(0));

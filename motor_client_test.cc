@@ -7,7 +7,7 @@ using ::testing::_;
 using ::testing::SaveArg;
 
 class MockPiClient : public PiClientInterface {
-public:
+ public:
   MOCK_METHOD2(snd, void(std::string buffer, size_t len));
 };
 

@@ -6,8 +6,7 @@ using namespace cv;
 
 int main(int, char **) {
   VideoCapture cap(1);
-  if (!cap.isOpened())
-    return -1;
+  if (!cap.isOpened()) return -1;
   namedWindow("Hue", CV_WINDOW_AUTOSIZE);
 
   int hue_low = kPinkHueLow;
@@ -15,8 +14,7 @@ int main(int, char **) {
   int erosion_size = kPinkErosionSize;
   createTrackbar("hue_low", "Hue", &hue_low, 255);
   createTrackbar("hue_high", "Hue", &hue_high, 255);
-  createTrackbar("Kernel size:\n 2n +1", "Hue", &erosion_size,
-                 21);
+  createTrackbar("Kernel size:\n 2n +1", "Hue", &erosion_size, 21);
 
   Mat src;
   for (;;) {

@@ -11,13 +11,14 @@
 #include "geometry.h"
 
 class ConnectedComponentsVisitor {
-public:
+ public:
   ConnectedComponentsVisitor(const cv::Mat *img)
       : img_(img), num_rows_(img->rows), num_cols_(img->cols) {
     assert(img_->depth() == CV_8U);
   }
 
-  template <typename Lambda> void Visit(Lambda f) {
+  template <typename Lambda>
+  void Visit(Lambda f) {
     marked_for_visiting_.clear();
     component_label_ = 0;
     for (int row = 0; row < num_rows_; ++row) {
@@ -39,7 +40,7 @@ public:
     }
   }
 
-private:
+ private:
   const cv::Mat *img_;
   int num_rows_;
   int num_cols_;
@@ -48,4 +49,4 @@ private:
   std::deque<int> to_visit_;
 };
 
-#endif // CONNECTED_COMPONENTS_H
+#endif  // CONNECTED_COMPONENTS_H

@@ -22,11 +22,10 @@ int main(int argc, char *argv[]) {
 
   Mat path = imread("path.png");
 
-  DoBfs(img.get(), start, 
-        [&](Vec2 p, Vec2 parent) {
-          parents.insert({p, parent});
-          return p != finish;
-        });
+  DoBfs(img.get(), start, [&](Vec2 p, Vec2 parent) {
+    parents.insert({p, parent});
+    return p != finish;
+  });
 
   int iter = 0;
   for (auto p = parents.find(finish); p != parents.end() && p->second != start;

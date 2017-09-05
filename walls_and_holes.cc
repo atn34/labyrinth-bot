@@ -5,7 +5,7 @@
 #include "opencv2/opencv.hpp"
 
 const std::vector<std::vector<Vec2>> &WallPolygons() {
-  static const std::vector<std::vector<Vec2>> &result = []() {
+  static const std::vector<std::vector<Vec2>> *result = []() {
     auto *out = new std::vector<std::vector<Vec2>>{
 
         {
@@ -169,13 +169,13 @@ const std::vector<std::vector<Vec2>> &WallPolygons() {
         },
     };
 
-    return *out;
+    return out;
   }();
-  return result;
+  return *result;
 }
 
 const std::vector<Vec2> &HoleCenters() {
-  static const std::vector<Vec2> &result = *new std::vector<Vec2>{
+  static const std::vector<Vec2> *result = new std::vector<Vec2>{
       {300, 171}, {455, 232}, {24, 30},   {81, 96},   {25, 256},  {25, 376},
       {82, 342},  {83, 429},  {136, 95},  {135, 211}, {137, 297}, {137, 402},
       {191, 96},  {191, 149}, {191, 257}, {191, 333}, {192, 454}, {245, 182},
@@ -185,5 +185,5 @@ const std::vector<Vec2> &HoleCenters() {
       {568, 452}, {619, 67},  {620, 295}, {619, 390},
   };
 
-  return result;
+  return *result;
 }

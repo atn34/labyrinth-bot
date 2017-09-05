@@ -3,6 +3,6 @@
 
 #include "opencv2/opencv.hpp"
 
-bool PerspectiveTransform(cv::Mat src, cv::Mat* dst);
+bool PerspectiveTransform(cv::Mat src, cv::Mat *dst);
 
 #endif /* PERSPECTIVE_TRANSFORM_H */

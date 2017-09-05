@@ -11,7 +11,7 @@ const Mat &get_ball_mask() {
   return out;
 }
 
-} // namespace
+}  // namespace
 
 Mat ThresholdBall::Threshold(Mat transformed) const {
   std::vector<Mat> hsv_planes;

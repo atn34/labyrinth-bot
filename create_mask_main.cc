@@ -7,8 +7,7 @@ using namespace cv;
 
 int main(int, char **) {
   VideoCapture cap(1);
-  if (!cap.isOpened())
-    return -1;
+  if (!cap.isOpened()) return -1;
   namedWindow("Masked", CV_WINDOW_AUTOSIZE);
 
   int low = 16;
@@ -28,7 +27,7 @@ int main(int, char **) {
     flip(src, src, -1);
 
     if (!PerspectiveTransform(src, &transformed)) {
-        continue;
+      continue;
     }
 
     cvtColor(transformed, transformed, CV_RGB2GRAY);
@@ -46,5 +45,3 @@ int main(int, char **) {
   imwrite("masked.png", transformed);
   return 0;
 }
-
-

@@ -38,6 +38,6 @@ void BallState::initialize(Point measured) {
 }
 
 void BallState::reset() {
-    initialized_ = false;
-    kf_.init(6, 2);
+  initialized_ = false;
+  kf_.init(6, 2);
 }

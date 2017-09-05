@@ -12,8 +12,7 @@ using namespace cv;
 int main(int, char **) {
   VideoCapture cap(1);
   cap.set(CV_CAP_PROP_FPS, 60);
-  if (!cap.isOpened())
-    return -1;
+  if (!cap.isOpened()) return -1;
   namedWindow("Ball position", CV_WINDOW_AUTOSIZE);
 
   Mat src, transformed;

@@ -15,8 +15,7 @@ using namespace cv;
 int main(int, char **) {
   VideoCapture cap(1);
   cap.set(CV_CAP_PROP_FPS, 60);
-  if (!cap.isOpened())
-    return -1;
+  if (!cap.isOpened()) return -1;
   namedWindow("Controller", CV_WINDOW_AUTOSIZE);
 
   Mat src, transformed;
@@ -30,14 +29,8 @@ int main(int, char **) {
   Vec2 accumulated_error = {};
 
   const std::vector<Vec2> problem_holes = {
-      {130, 98},
-      {190, 98},
-      {25, 256},
-      {40, 30},
-      {26, 376},
-      {80, 99},
-      {81, 343},
-      {82, 428},
+      {130, 98}, {190, 98}, {25, 256}, {40, 30},
+      {26, 376}, {80, 99},  {81, 343}, {82, 428},
   };
 
   for (;;) {
@@ -49,18 +42,18 @@ int main(int, char **) {
     flip(src, src, -1);
 
     if (!PerspectiveTransform(src, &transformed)) {
-        std::cout << "perspective transform failed" << std::endl;
-        break;
+      std::cout << "perspective transform failed" << std::endl;
+      break;
     }
 
     Point measured;
     if (!MeasureBallPosition(transformed, &measured)) {
-        std::cout << "measure ball position failed" << std::endl;
-        break;
+      std::cout << "measure ball position failed" << std::endl;
+      break;
     }
 
     if (motor_client == nullptr) {
-        motor_client.reset(new MotorClient);
+      motor_client.reset(new MotorClient);
     }
 
     ball_state.update(measured);
@@ -94,8 +87,8 @@ int main(int, char **) {
     Vec2 next_goal = sub_goals.next_goal(Vec2{x, y});
 
     if (vx * vx + vy * vy >= 2) {
-        accumulated_error.x = ex / ix;
-        accumulated_error.y = ey / iy;
+      accumulated_error.x = ex / ix;
+      accumulated_error.y = ey / iy;
     }
 
     goal = next_goal;
@@ -113,29 +106,31 @@ int main(int, char **) {
     int motor_y = px_term + iy_term - dx_term;
 
     line(transformed, Point(x, y), Point(x, y) + Point(px_term, py_term),
-            Scalar(0, 0, 255));
+         Scalar(0, 0, 255));
     line(transformed, Point(x, y), Point(x, y) - Point(dx_term, dy_term),
-            Scalar(0, 255, 0));
+         Scalar(0, 255, 0));
     line(transformed, Point(x, y), Point(x, y) + Point(ix_term, iy_term),
-            Scalar(255, 0, 0));
+         Scalar(255, 0, 0));
 
     float repel = 40000;
     for (const auto &hole : problem_holes) {
-        float x_force = x - hole.x;
-        float y_force = y - hole.y;
+      float x_force = x - hole.x;
+      float y_force = y - hole.y;
 
-        float avoid_hole_x_adjustment = repel * x_force / (sqrt(x_force *
-                    x_force + y_force * y_force)* (x_force * x_force + y_force
-                        * y_force));
-        float avoid_hole_y_adjustment = repel * y_force / (sqrt(x_force *
-                    x_force + y_force * y_force)* (x_force * x_force + y_force
-                        * y_force));
+      float avoid_hole_x_adjustment =
+          repel * x_force / (sqrt(x_force * x_force + y_force * y_force) *
+                             (x_force * x_force + y_force * y_force));
+      float avoid_hole_y_adjustment =
+          repel * y_force / (sqrt(x_force * x_force + y_force * y_force) *
+                             (x_force * x_force + y_force * y_force));
 
-        line(transformed, Point(hole.x, hole.y), Point(hole.x, hole.y) + Point(avoid_hole_x_adjustment,
-                    avoid_hole_y_adjustment), Scalar(255, 255, 255));
-        
-        motor_x += avoid_hole_x_adjustment;
-        motor_y += avoid_hole_y_adjustment;
+      line(transformed, Point(hole.x, hole.y),
+           Point(hole.x, hole.y) +
+               Point(avoid_hole_x_adjustment, avoid_hole_y_adjustment),
+           Scalar(255, 255, 255));
+
+      motor_x += avoid_hole_x_adjustment;
+      motor_y += avoid_hole_y_adjustment;
     }
 
     motor_client->step_to(MotorClient::HORIZONTAL, motor_x);

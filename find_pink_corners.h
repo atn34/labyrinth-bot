@@ -8,12 +8,13 @@ constexpr int kPinkHueHigh = 19;
 constexpr int kPinkErosionSize = 2;
 
 class HueThresholder {
-public:
+ public:
   HueThresholder()
       : HueThresholder(kPinkHueLow, kPinkHueHigh, kPinkErosionSize) {}
 
   HueThresholder(int hue_low, int hue_high, int erosion_size)
-      : hue_low_(hue_low), hue_high_(hue_high),
+      : hue_low_(hue_low),
+        hue_high_(hue_high),
         erosion_element_(cv::getStructuringElement(
             cv::MORPH_RECT,
             cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
@@ -21,7 +22,7 @@ public:
 
   cv::Mat thresh(const cv::Mat &src);
 
-private:
+ private:
   int hue_low_;
   int hue_high_;
   cv::Mat erosion_element_;
