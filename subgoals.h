@@ -1,18 +1,20 @@
 #ifndef NEXT_SUBGOAL_H
 #define NEXT_SUBGOAL_H
 
+#include <map>
 #include <vector>
 
 #include "geometry.h"
 
-enum AngleOfInterestType { kLineSegment, kCircle, kGoal };
+enum ObstacleOrGoalType { kLineSegment, kCircle, kGoal };
 
-struct AngleOfInterest {
-    float theta;
-    enum AngleOfInterestType type;
+struct ObstacleOrGoal {
+    enum ObstacleOrGoalType type;
     float dist_to_impact;
     float theta_enter;
     float theta_exit;
+
+    void UpdateDistToImpact(Vec2 ball_pos, float theta);
 
     union {
         struct { /* line segment */
@@ -24,7 +26,8 @@ struct AngleOfInterest {
         };
 
         struct { /* goal */
-            Vec2 p;
+            Vec2 goal;
+            int goal_index;
         };
     };
 };
@@ -37,7 +40,9 @@ public:
   Vec2 next_goal(Vec2 ball_pos);
 
 private:
-  std::vector<AngleOfInterest> angles_of_interest_;
+  std::vector<ObstacleOrGoal> obstacles_and_goals_;
+  std::map<float, ObstacleOrGoal*> angles_of_interest_;
+    
 };
 
 #endif /* NEXT_SUBGOAL_H */
