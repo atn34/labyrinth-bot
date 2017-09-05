@@ -8,6 +8,7 @@
 #include "opencv2/imgproc.hpp"
 
 #include "bfs.h"
+#include "geometry.h"
 
 class ConnectedComponentsVisitor {
 public:
@@ -29,7 +30,7 @@ public:
           continue;
         }
         Bfs bfs(img_, &marked_for_visiting_, &to_visit_);
-        bfs.bfs(cv::Point(col, row), [&](cv::Point p, cv::Point /* parent */) {
+        bfs.bfs(Vec2FromInt(col, row), [&](Vec2 p, Vec2 /* parent */) {
           f(p, component_label_);
           return true;
         });

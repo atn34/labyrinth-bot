@@ -1,7 +1,9 @@
 #include "measure_ball_position.h"
 
 #include "connected_components.h"
+#include "geometry.h"
 #include "threshold_ball.h"
+
 
 using namespace cv;
 
@@ -20,14 +22,14 @@ bool MeasureBallPosition(Mat perspective_transformed,
   std::vector<ComponentInfo> infos;
   int my_label = -1;
 
-  visitor.Visit([&](Point p, int label) {
+  visitor.Visit([&](Vec2 p, int label) {
     if (my_label != label) {
       ++my_label;
       infos.push_back(ComponentInfo{});
     }
     auto &info = infos.back();
-    info.ys += (static_cast<float>(p.y));
-    info.xs += (static_cast<float>(p.x));
+    info.ys += p.y;
+    info.xs += p.x;
     ++info.size;
   });
 

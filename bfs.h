@@ -6,6 +6,8 @@
 
 #include "opencv2/imgproc.hpp"
 
+#include "geometry.h"
+
 class Bfs {
 public:
   Bfs(const cv::Mat *img, std::unordered_set<int> *marked_for_visiting,
@@ -14,7 +16,7 @@ public:
         marked_for_visiting_(marked_for_visiting), to_visit_(to_visit) {}
   virtual ~Bfs() = default;
 
-  template <typename Lambda> void bfs(cv::Point start, Lambda f) {
+  template <typename Lambda> void bfs(Vec2 start, Lambda f) {
     to_visit_->clear();
     to_visit_->push_back(point_to_node(start));
     marked_for_visiting_->insert(point_to_node(start));
@@ -39,7 +41,7 @@ public:
           to_visit_->push_back(neighbor);
           marked_for_visiting_->insert(neighbor);
 
-          if (!f(cv::Point(c, r), cv::Point(col, row))) {
+          if (!f(Vec2FromInt(c, r), Vec2FromInt(col, row))) {
               return;
           }
         }
@@ -48,9 +50,9 @@ public:
   }
 
 private:
-  int point_to_node(const cv::Point &p) { return p.y * img_->cols + p.x; }
-  cv::Point node_to_point(int n) {
-    return cv::Point(n / img_->cols, n % img_->cols);
+  int point_to_node(const Vec2 &p) { return p.y * img_->cols + p.x; }
+  Vec2 node_to_point(int n) {
+    return Vec2FromInt(n / img_->cols, n % img_->cols);
   }
 
   const cv::Mat *img_;
@@ -61,7 +63,7 @@ private:
 };
 
 template <typename Lambda>
-void DoBfs(const cv::Mat *img, cv::Point start, Lambda f) {
+void DoBfs(const cv::Mat *img, Vec2 start, Lambda f) {
     std::unordered_set<int> marked_for_visiting;
     std::deque<int> to_visit;
     Bfs bfs(img, &marked_for_visiting, &to_visit);
