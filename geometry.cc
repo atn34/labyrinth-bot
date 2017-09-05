@@ -5,24 +5,49 @@
 
 namespace {
 
-// Solves ax^2 + bx + c = 0. Writes real roots to *x1 and *x2, and returns the
-// number of real roots.
-int solve_quadratic(float a, float b, float c, float* x1, float* x2) {
+// Solves ax^2 + bx + c = 0. Writes real roots to *x1 and *x2, and returns all real roots.
+std::vector<float> solve_quadratic(float a, float b, float c) {
+    std::vector<float> result;
     float discriminant =  b * b - 4 * a * c;
     if (discriminant < 0) {
-        return 0;
-    }
-    if (discriminant == 0) {
-        *x1 = -b / (2 * a);
-        return 1;
+        return result;
     }
     float sqrt_discriminant = sqrt(discriminant);
-    *x1 = (-b - sqrt_discriminant) / (2 * a);
-    *x2 = (-b + sqrt_discriminant) / (2 * a);
-    return 2;
+    result.push_back((-b - sqrt_discriminant) / (2 * a));
+    result.push_back((-b + sqrt_discriminant) / (2 * a));
+    return result;
+}
+
+// Returns the smallest positive element of roots, or a negative number if all are negative.
+float dist_from_roots(std::vector<float> roots) {
+    float result = -1;
+    for (const auto& root : roots) {
+        if (root > 0) {
+            if (result < 0) {
+                result = root;
+            } else {
+                result = std::min(result, root);
+            }
+        }
+    }
+    return result;
+}
+
+float DotProduct(Vec p1, Vec p2) {
+    return p1.x * p2.x + p1.y * p2.y;
+}
+
+
+float Magnitude(Vec p) {
+    return sqrt(p.x * p.x + p.y * p.y);
 }
 
 }  // namespace
+
+Vec Vec::MakeUnit() {
+    float magnitude = Magnitude(*this);
+    return Vec{x / magnitude, y / magnitude};
+}
 
 // || start + t * direction - target || = r1 + r2, and then solve for t
 float DistanceToImpact(Circle start, Vec direction, Circle target) {
@@ -36,25 +61,45 @@ float DistanceToImpact(Circle start, Vec direction, Circle target) {
     float b = 2 * x * x_dir + 2 * y * y_dir;
     float c = x * x + y * y - r_sum * r_sum;
 
-    float root_1;
-    float root_2;
-
-    int num_roots = solve_quadratic(a, b, c, &root_1, &root_2);
-    if (num_roots == 0) {
-        return -1;
-    }
-    if (num_roots == 1) {
-        return root_1;
-    }
-    if (root_1 >= 0 && root_2 >= 0) {
-        return std::min(root_1, root_2);
-    }
-    if (root_1 >= 0) {
-        return root_1;
-    }
-    if (root_2 >= 0) {
-        return root_2;
-    }
-    return -1;
+    return dist_from_roots(solve_quadratic(a, b, c));
 }
 
+// https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line.
+// Set formula for distance from line containing (x1, y1) and (x2, y2)
+// to (x(t), y(t)) equal to radius of circle and solve for t.
+float DistanceToImpact(Circle start, Vec direction, LineSegment target) {
+    float x1 = target.p1.x;
+    float x2 = target.p2.x;
+    float y1 = target.p1.y;
+    float y2 = target.p2.y;
+    float x0 = start.p.x;
+    float y0 = start.p.y;
+    float x_dir = direction.x;
+    float y_dir = direction.y;
+
+    float kNumeratorConstants = y2 * x0 - y1 * x0 - x2 * y0 + x1 * y0 + x2 *
+        y1 - y2 * x1;
+    float kNumeratorLinearTerms = y2 * x_dir - y1 * x_dir - x2 * y_dir + x1 * y_dir;
+    float kDenom = (y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1);
+
+    float a = kNumeratorLinearTerms * kNumeratorLinearTerms;
+    float b = 2 * kNumeratorConstants * kNumeratorLinearTerms;
+    float c = kNumeratorConstants * kNumeratorConstants - kDenom * start.r * start.r;
+
+    float t = dist_from_roots(solve_quadratic(a, b, c));
+
+    // We want to know if circle at start + t * direction touches target.
+    // Project start + t * direction onto target:
+    // https://en.wikipedia.org/wiki/Vector_projection.
+    Vec u = (target.p2 - target.p1).MakeUnit();
+    float projected = DotProduct(u, Vec{x0 + x_dir * t, y0 + y_dir * t} - target.p1);
+    float dist_to_segment = -1;
+    if (0 <= projected && projected <= Magnitude(target.p2 - target.p1)) {
+        dist_to_segment = t;
+    }
+
+    // Also check endpoints. Treat as time to impact for radius 0 circles.
+    return dist_from_roots({dist_to_segment, DistanceToImpact(start, direction,
+                Circle{target.p1, 0}), DistanceToImpact(start, direction,
+                    Circle{target.p2, 0})});
+}

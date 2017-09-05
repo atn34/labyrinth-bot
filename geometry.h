@@ -2,18 +2,24 @@
 #define GEOMETRY_H
 
 struct Vec {
-    float x;
-    float y;
+    const float x;
+    const float y;
+
+    Vec MakeUnit();
 };
 
+inline Vec operator-(const Vec& p1, const Vec& p2) {
+    return Vec{p1.x - p2.x, p1.y - p2.y};
+}
+
 struct LineSegment {
-    Vec x1;
-    Vec x2;
+    const Vec p1;
+    const Vec p2;
 };
 
 struct Circle {
-    Vec p;
-    float r;
+    const Vec p;
+    const float r;
 };
 
 /// Returns true if |start| traveling in |direction| will hit |target|.
@@ -21,5 +27,6 @@ struct Circle {
 /// move along |direction| in order to touch |target|.  Preconditions: |start| is
 /// not touching |target|, and |direction| is unit.
 float DistanceToImpact(Circle start, Vec direction, Circle target);
+float DistanceToImpact(Circle start, Vec direction, LineSegment target);
 
 #endif /* GEOMETRY_H */
