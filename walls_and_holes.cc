@@ -4,9 +4,9 @@
 
 #include "opencv2/opencv.hpp"
 
-const std::vector<std::vector<MyPoint>> &WallPolygons() {
-  static const std::vector<std::vector<MyPoint>> &result = []() {
-    auto *out = new std::vector<std::vector<MyPoint>>{
+const std::vector<std::vector<Vec2>> &WallPolygons() {
+  static const std::vector<std::vector<Vec2>> &result = []() {
+    auto *out = new std::vector<std::vector<Vec2>>{
 
         {
             {3, 50}, {58, 50}, {58, 61}, {3, 61},
@@ -174,8 +174,8 @@ const std::vector<std::vector<MyPoint>> &WallPolygons() {
   return result;
 }
 
-const std::vector<MyPoint> &HoleCenters() {
-  static const std::vector<MyPoint> &result = *new std::vector<MyPoint>{
+const std::vector<Vec2> &HoleCenters() {
+  static const std::vector<Vec2> &result = *new std::vector<Vec2>{
       {300, 171}, {455, 232}, {24, 30},   {81, 96},   {25, 256},  {25, 376},
       {82, 342},  {83, 429},  {136, 95},  {135, 211}, {137, 297}, {137, 402},
       {191, 96},  {191, 149}, {191, 257}, {191, 333}, {192, 454}, {245, 182},

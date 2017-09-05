@@ -26,10 +26,10 @@ int main(int, char **) {
   Subgoals sub_goals;
   std::unique_ptr<MotorClient> motor_client;
 
-  Point goal;
-  Point accumulated_error;
+  Vec2 goal;
+  Vec2 accumulated_error;
 
-  const std::vector<Point> problem_holes = {
+  const std::vector<Vec2> problem_holes = {
       {130, 98},
       {190, 98},
       {25, 256},
@@ -91,7 +91,7 @@ int main(int, char **) {
     dx = 10;
     dy = 10;
 
-    Point next_goal = sub_goals.next_goal(Point(x, y));
+    Vec2 next_goal = sub_goals.next_goal(Vec2{x, y});
 
     if (vx * vx + vy * vy >= 2) {
         accumulated_error.x = ex / ix;
@@ -131,7 +131,7 @@ int main(int, char **) {
                     x_force + y_force * y_force)* (x_force * x_force + y_force
                         * y_force));
 
-        line(transformed, hole, hole + Point(avoid_hole_x_adjustment,
+        line(transformed, Point(hole.x, hole.y), Point(hole.x, hole.y) + Point(avoid_hole_x_adjustment,
                     avoid_hole_y_adjustment), Scalar(255, 255, 255));
         
         motor_x += avoid_hole_x_adjustment;
@@ -141,7 +141,7 @@ int main(int, char **) {
     motor_client->step_to(MotorClient::HORIZONTAL, motor_x);
     motor_client->step_to(MotorClient::VERTICAL, motor_y);
 
-    circle(transformed, goal, 10, Scalar(0, 255, 0));
+    circle(transformed, Point(goal.x, goal.y), 10, Scalar(0, 255, 0));
 
     imshow("Controller", transformed);
   }

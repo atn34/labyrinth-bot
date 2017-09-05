@@ -114,40 +114,29 @@ void add_angle_of_interest_from_line_segment(Vec2 ball_pos, Vec2 p1,
 }
 
 void add_angles_of_interest_from_polygon(Vec2 ball_pos, const
-        std::vector<MyPoint>& polygon, std::vector<AngleOfInterest>* angles) {
-    const MyPoint *last = nullptr;
-    const MyPoint *first = nullptr;
+        std::vector<Vec2>& polygon, std::vector<AngleOfInterest>* angles) {
+    const Vec2 *last = nullptr;
+    const Vec2 *first = nullptr;
     for (const auto &vertex : polygon) {
         if (last != nullptr) {
-            add_angle_of_interest_from_line_segment(ball_pos,
-                    Vec2{static_cast<float>(last->x),
-                    static_cast<float>(last->y)},
-                    Vec2{static_cast<float>(vertex.x),
-                    static_cast<float>(vertex.y)}, angles);
+            add_angle_of_interest_from_line_segment(ball_pos, *last, vertex, angles);
         } else {
             first = &vertex;
         }
         last = &vertex;
-        add_angle_of_interest_from_line_segment(ball_pos,
-                Vec2{static_cast<float>(last->x), static_cast<float>(last->y)},
-                Vec2{static_cast<float>(first->x),
-                static_cast<float>(first->y)}, angles);
+        add_angle_of_interest_from_line_segment(ball_pos, *last, *first, angles);
     }
 }
 
 }  // namespace
 
-Point Subgoals::next_goal(Point ball_pos) {
+Vec2 Subgoals::next_goal(Vec2 ball_pos) {
     angles_of_interest_.clear();
-    Vec2 ball_pos_vec2{static_cast<float>(ball_pos.x),
-                static_cast<float>(ball_pos.y)};
     for (const auto& polygon : WallPolygons()) {
-        add_angles_of_interest_from_polygon(ball_pos_vec2, polygon,
-                &angles_of_interest_);
+        add_angles_of_interest_from_polygon(ball_pos, polygon, &angles_of_interest_);
     }
     for (const auto& hole : HoleCenters()) {
-        add_angles_of_interest_from_circle(ball_pos_vec2, Circle{Vec2{static_cast<float>(hole.x),
-                static_cast<float>(hole.y)}, 16}, &angles_of_interest_);
+        add_angles_of_interest_from_circle(ball_pos, Circle{hole, 16}, &angles_of_interest_);
     }
-    return Point(640 / 3, 30);
+    return Vec2{640 / 3, 30};
 }

@@ -15,6 +15,10 @@ inline Vec2 operator-(const Vec2& p1, const Vec2& p2) {
     return Vec2{p1.x - p2.x, p1.y - p2.y};
 }
 
+inline Vec2 operator+(const Vec2& p1, const Vec2& p2) {
+    return Vec2{p1.x + p2.x, p1.y + p2.y};
+}
+
 struct LineSegment {
     Vec2 p1;
     Vec2 p2;

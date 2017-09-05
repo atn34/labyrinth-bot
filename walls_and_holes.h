@@ -3,12 +3,9 @@
 
 #include <vector>
 
-struct MyPoint {
-  int x;
-  int y;
-};
+#include "geometry.h"
 
-const std::vector<std::vector<MyPoint>> &WallPolygons();
-const std::vector<MyPoint> &HoleCenters();
+const std::vector<std::vector<Vec2>> &WallPolygons();
+const std::vector<Vec2> &HoleCenters();
 
 #endif /* WALLS_AND_HOLES_H */

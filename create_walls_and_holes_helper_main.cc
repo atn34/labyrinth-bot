@@ -48,8 +48,8 @@ int main(int argc, char *argv[]) {
       &mouse_state);
 
   for (const auto &polygon : WallPolygons()) {
-    const MyPoint *last = nullptr;
-    const MyPoint *first = nullptr;
+    const Vec2 *last = nullptr;
+    const Vec2 *first = nullptr;
     for (const auto &vertex : polygon) {
       if (last != nullptr) {
         line(board, Point(last->x, last->y), Point(vertex.x, vertex.y),

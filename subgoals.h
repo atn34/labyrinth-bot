@@ -1,9 +1,9 @@
 #ifndef NEXT_SUBGOAL_H
 #define NEXT_SUBGOAL_H
 
-#include "geometry.h"
+#include <vector>
 
-#include "opencv2/opencv.hpp"
+#include "geometry.h"
 
 enum AngleOfInterestType { kLineSegment, kCircle, kGoal };
 
@@ -34,7 +34,7 @@ public:
   Subgoals() = default;
   virtual ~Subgoals() = default;
 
-  cv::Point next_goal(cv::Point ball_pos);
+  Vec2 next_goal(Vec2 ball_pos);
 
 private:
   std::vector<AngleOfInterest> angles_of_interest_;
