@@ -51,8 +51,7 @@ const std::vector<Vec2> &subgoals() {
 constexpr float kBallRadius = 10;
 
 void add_obstacles_from_circle(Vec2 ball_pos, Circle c,
-        std::vector<ObstacleOrGoal>* obstacles_and_goals, std::map<float,
-        ObstacleOrGoal*>* angles) {
+        std::vector<ObstacleOrGoal>* obstacles_and_goals) {
     float theta = (c.p - ball_pos).theta();
     float delta_theta = acos((c.r + kBallRadius) / (c.p -
                 ball_pos).Magnitude());
@@ -65,13 +64,10 @@ void add_obstacles_from_circle(Vec2 ball_pos, Circle c,
     obstacle.circle = c;
 
     obstacles_and_goals->push_back(obstacle);
-    (*angles)[obstacle.theta_enter] = &obstacles_and_goals->back();
-    (*angles)[obstacle.theta_exit] = &obstacles_and_goals->back();
 }
 
 void add_obstacles_from_line_segment(Vec2 ball_pos, Vec2 p1, Vec2 p2,
-        std::vector<ObstacleOrGoal>* obstacles_and_goals, std::map<float,
-        ObstacleOrGoal*>* angles) {
+        std::vector<ObstacleOrGoal>* obstacles_and_goals) {
     float theta1 = (p1 - ball_pos).theta();
     float theta2 = (p2 - ball_pos).theta();
     if (theta1 > theta2) {
@@ -87,24 +83,21 @@ void add_obstacles_from_line_segment(Vec2 ball_pos, Vec2 p1, Vec2 p2,
     obstacle.segment = {p1, p2};
 
     obstacles_and_goals->push_back(obstacle);
-    (*angles)[obstacle.theta_enter] = &obstacles_and_goals->back();
-    (*angles)[obstacle.theta_exit] = &obstacles_and_goals->back();
 }
 
 void add_obstacles_from_polygon(Vec2 ball_pos, const std::vector<Vec2>&
-        polygon, std::vector<ObstacleOrGoal>* obstacles_and_goals,
-        std::map<float, ObstacleOrGoal*>* angles) {
+        polygon, std::vector<ObstacleOrGoal>* obstacles_and_goals) {
     const Vec2 *last = nullptr;
     const Vec2 *first = nullptr;
     for (const auto &vertex : polygon) {
         if (last != nullptr) {
-            add_obstacles_from_line_segment(ball_pos, *last, vertex, obstacles_and_goals, angles);
+            add_obstacles_from_line_segment(ball_pos, *last, vertex, obstacles_and_goals);
         } else {
             first = &vertex;
         }
         last = &vertex;
-        add_obstacles_from_line_segment(ball_pos, *last, *first, obstacles_and_goals, angles);
     }
+    add_obstacles_from_line_segment(ball_pos, *last, *first, obstacles_and_goals);
 }
 
 }  // namespace
@@ -125,13 +118,12 @@ void ObstacleOrGoal::UpdateDistToImpact(Vec2 ball_pos, float theta) {
 Vec2 Subgoals::next_goal(Vec2 ball_pos) {
   obstacles_and_goals_.clear();
   angles_of_interest_.clear();
+  obstacles_by_dist_to_impact_.clear();
   for (const auto &polygon : WallPolygons()) {
-    add_obstacles_from_polygon(ball_pos, polygon, &obstacles_and_goals_,
-                               &angles_of_interest_);
+    add_obstacles_from_polygon(ball_pos, polygon, &obstacles_and_goals_);
   }
   for (const auto &hole : HoleCenters()) {
-    add_obstacles_from_circle(ball_pos, Circle{hole, 16}, &obstacles_and_goals_,
-                              &angles_of_interest_);
+    add_obstacles_from_circle(ball_pos, Circle{hole, 16}, &obstacles_and_goals_);
   }
   {
     int goal_index = 0;
@@ -143,19 +135,23 @@ Vec2 Subgoals::next_goal(Vec2 ball_pos) {
       goal.goal = subgoal;
       goal.goal_index = goal_index++;
       obstacles_and_goals_.push_back(goal);
-      angles_of_interest_[goal.theta_enter] = &obstacles_and_goals_.back();
     }
+  }
+  for (auto& obstacle_or_goal : obstacles_and_goals_) {
+      angles_of_interest_[obstacle_or_goal.theta_enter] = &obstacle_or_goal;;
+      if (obstacle_or_goal.type != kGoal) {
+          angles_of_interest_[obstacle_or_goal.theta_exit] = &obstacle_or_goal;;
+      }
   }
 
   Vec2 best_subgoal;
   int best_subgoal_index = subgoals().size();
-  std::map<float, ObstacleOrGoal *> obstacles_by_dist_to_impact;
   for (const auto &pair : angles_of_interest_) {
     float theta = pair.first;
     if (pair.second->type == kGoal) {
       const ObstacleOrGoal *goal = pair.second;
-      const auto &first_obstacle = obstacles_by_dist_to_impact.begin();
-      if (goal->dist_to_impact < first_obstacle->second->dist_to_impact) {
+      const auto* first_obstacle = obstacles_by_dist_to_impact_.begin()->second;
+      if (goal->dist_to_impact < first_obstacle->dist_to_impact) {
         if (goal->goal_index < best_subgoal_index) {
           best_subgoal_index = goal->goal_index;
           best_subgoal = goal->goal;
@@ -164,20 +160,20 @@ Vec2 Subgoals::next_goal(Vec2 ball_pos) {
     } else {
       const ObstacleOrGoal *obstacle = pair.second;
       if (theta == obstacle->theta_exit) {
-        obstacles_by_dist_to_impact.erase(obstacle->dist_to_impact);
+        obstacles_by_dist_to_impact_.erase(obstacle->dist_to_impact);
       } else {
         // Update dist_to_impact for current closest obstacle if there is one.
-        if (obstacles_by_dist_to_impact.size() > 0) {
-          ObstacleOrGoal *closest = obstacles_by_dist_to_impact.begin()->second;
-          obstacles_by_dist_to_impact.erase(
-              obstacles_by_dist_to_impact.begin());
+        if (obstacles_by_dist_to_impact_.size() > 0) {
+          ObstacleOrGoal *closest = obstacles_by_dist_to_impact_.begin()->second;
+          obstacles_by_dist_to_impact_.erase(
+              obstacles_by_dist_to_impact_.begin());
           closest->UpdateDistToImpact(ball_pos, theta);
-          obstacles_by_dist_to_impact[closest->dist_to_impact] = closest;
+          obstacles_by_dist_to_impact_[closest->dist_to_impact] = closest;
         }
 
         ObstacleOrGoal* new_obstacle = pair.second;
         new_obstacle->UpdateDistToImpact(ball_pos, theta);
-        obstacles_by_dist_to_impact[new_obstacle->dist_to_impact] = new_obstacle;
+        obstacles_by_dist_to_impact_[new_obstacle->dist_to_impact] = new_obstacle;
       }
     }
   }
