@@ -5,7 +5,7 @@
 
 namespace {
 
-// Solves ax^2 + bx + c = 0. Writes real roots to *x1 and *x2, and returns all real roots.
+// Solves ax^2 + bx + c = 0. Returns all real roots.
 std::vector<float> solve_quadratic(float a, float b, float c) {
     std::vector<float> result;
     float discriminant =  b * b - 4 * a * c;

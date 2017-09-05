@@ -22,10 +22,10 @@ struct Circle {
     const float r;
 };
 
-/// Returns true if |start| traveling in |direction| will hit |target|.
-/// Otherwise returns the minimum distance |start| would have to
-/// move along |direction| in order to touch |target|.  Preconditions: |start| is
-/// not touching |target|, and |direction| is unit.
+/// Returns the minimum distance |start| would have to move along |direction| in
+/// order to touch |target|, or a negative value if |start| will not touch
+/// |target|.  Preconditions: |start| is not touching |target|, and |direction|
+/// is unit.
 float DistanceToImpact(Circle start, Vec direction, Circle target);
 float DistanceToImpact(Circle start, Vec direction, LineSegment target);
 
