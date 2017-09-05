@@ -4,6 +4,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "walls_and_holes.h"
+#include "subgoals.h"
 
 using namespace cv;
 
@@ -67,13 +68,17 @@ int main(int argc, char *argv[]) {
     circle(board, Point(hole.x, hole.y), 16, Scalar(0, 255, 0));
   }
 
+  Subgoals subgoals;
+
   Mat with_cursors;
   for (;;) {
     with_cursors = board.clone();
     if (mouse_state.selecting_rectangle) {
       rectangle(with_cursors, mouse_state.upper_left, mouse_state.mouse, Scalar(0, 0, 0));
     } else {
-      circle(with_cursors, mouse_state.mouse, 16, Scalar(0, 0, 0));
+      Vec2 mouse = Vec2FromInt(mouse_state.mouse.x, mouse_state.mouse.y);
+      Vec2 subgoal = subgoals.next_goal(mouse);
+      circle(with_cursors, Point(subgoal.x, subgoal.y), 10, Scalar(0, 0, 0));
     }
     imshow("create walls", with_cursors);
 

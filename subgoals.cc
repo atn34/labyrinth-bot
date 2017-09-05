@@ -150,8 +150,10 @@ Vec2 Subgoals::next_goal(Vec2 ball_pos) {
     float theta = pair.first;
     if (pair.second->type == kGoal) {
       const ObstacleOrGoal *goal = pair.second;
-      const auto* first_obstacle = obstacles_by_dist_to_impact_.begin()->second;
-      if (goal->dist_to_impact < first_obstacle->dist_to_impact) {
+
+      const auto* first_obstacle = obstacles_by_dist_to_impact_.size() > 0 ?
+          obstacles_by_dist_to_impact_.begin()->second : nullptr;
+      if (first_obstacle == nullptr || goal->dist_to_impact < first_obstacle->dist_to_impact) {
         if (goal->goal_index < best_subgoal_index) {
           best_subgoal_index = goal->goal_index;
           best_subgoal = goal->goal;
