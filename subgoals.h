@@ -14,7 +14,7 @@ struct ObstacleOrGoal {
   float theta_enter;
   float theta_exit;
 
-  void UpdateDistToImpact(Vec2 ball_pos, float theta);
+  float DistToImpact(Vec2 ball_pos, float theta);
 
   union {
     struct {/* line segment */
@@ -38,7 +38,7 @@ class Subgoals {
   virtual ~Subgoals() = default;
 
   Vec2 next_goal(Vec2 ball_pos,
-                 std::function<void(float, const ObstacleOrGoal *)>
+                 std::function<void(float, float)>
                      debug_callback = nullptr);
 
  private:

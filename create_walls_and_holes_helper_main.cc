@@ -80,9 +80,9 @@ int main(int argc, char *argv[]) {
     } else {
       circle(with_cursors, Point(mouse.x, mouse.y), 10, Scalar(0, 0, 0));
       Vec2 subgoal = subgoals.next_goal(
-          mouse, [&](float theta, const ObstacleOrGoal *obstacle) {
+          mouse, [&](float theta, float length) {
             Vec2 target =
-                mouse + UnitVec2FromTheta(theta) * obstacle->dist_to_impact;
+                mouse + UnitVec2FromTheta(theta) * length;
             line(with_cursors, Point(mouse.x, mouse.y),
                  Point(target.x, target.y), Scalar(0, 0, 0));
           });
