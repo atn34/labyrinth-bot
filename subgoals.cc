@@ -1,10 +1,13 @@
 #include "subgoals.h"
 
 #include <algorithm>
+#include <math.h>
 #include <unordered_map>
 
 #include "bfs.h"
+#include "geometry.h"
 #include "mask_util.h"
+#include "walls_and_holes.h"
 
 using namespace cv;
 
@@ -16,51 +19,135 @@ struct PointHasher {
     }
 };
 
-const std::vector<Point> &subgoals() {
-  static const std::vector<Point> &result = []() {
-    const Point start(346, 29);
-    const Point finish(620, 249);
+/* const std::vector<Point> &subgoals() { */
+/*   static const std::vector<Point> &result = []() { */
+/*     const Point start(346, 29); */
+/*     const Point finish(620, 249); */
 
-    std::unordered_map<Point, Point, PointHasher> parents;
+/*     std::unordered_map<Point, Point, PointHasher> parents; */
 
-    auto img = get_mask_from_file("path.png");
-    bitwise_not(*img, *img);
+/*     auto img = get_mask_from_file("path.png"); */
+/*     bitwise_not(*img, *img); */
 
-    Mat path = imread("path.png");
+/*     Mat path = imread("path.png"); */
 
-    DoBfs(img.get(), start, [&](Point p, Point parent) {
-      parents[p] = parent;
-      return p != finish;
-    });
+/*     DoBfs(img.get(), start, [&](Point p, Point parent) { */
+/*       parents[p] = parent; */
+/*       return p != finish; */
+/*     }); */
 
-    auto *out = new std::vector<Point>;
+/*     auto *out = new std::vector<Point>; */
 
-    int iter = 0;
-    for (auto p = parents.find(finish);
-         p != parents.end() && p->second != start;
-         p = parents.find(p->second)) {
-      if (iter++ % 5 == 0) {
-        out->push_back(p->second);
-      }
-    }
-    out->push_back(start);
+/*     int iter = 0; */
+/*     for (auto p = parents.find(finish); */
+/*          p != parents.end() && p->second != start; */
+/*          p = parents.find(p->second)) { */
+/*       if (iter++ % 5 == 0) { */
+/*         out->push_back(p->second); */
+/*       } */
+/*     } */
+/*     out->push_back(start); */
 
-    std::reverse(out->begin(), out->end());
-    return *out;
-  }();
-  return result;
+/*     std::reverse(out->begin(), out->end()); */
+/*     return *out; */
+/*   }(); */
+/*   return result; */
+/* } */
+
+constexpr float kBallRadius = 10;
+
+void add_angles_of_interest_from_circle(Vec2 ball_pos, Circle c,
+        std::vector<AngleOfInterest>* angles) {
+    float theta = (c.p - ball_pos).theta();
+    float delta_theta = acos((c.r + kBallRadius) / (c.p -
+                ball_pos).Magnitude());
+
+    AngleOfInterest angle1;
+    angle1.theta = theta - delta_theta;
+    angle1.type = kLineSegment;
+    angle1.dist_to_impact = (c.r + kBallRadius) / tan(delta_theta);
+    angle1.circle = c;
+
+    AngleOfInterest angle2;
+    angle2.theta = theta + delta_theta;
+    angle2.type = kLineSegment;
+    angle2.dist_to_impact = (c.r + kBallRadius) / tan(delta_theta);
+    angle2.circle = c;
+
+    angle1.theta_enter = angle1.theta;
+    angle1.theta_exit = angle2.theta;
+    angle2.theta_enter = angle1.theta;
+    angle2.theta_exit = angle2.theta;
+
+    angles->push_back(angle1);
+    angles->push_back(angle2);
 }
+
+void add_angle_of_interest_from_line_segment(Vec2 ball_pos, Vec2 p1,
+        Vec2 p2, std::vector<AngleOfInterest>* angles) {
+    float theta1 = (p1 - ball_pos).theta();
+    float theta2 = (p2 - ball_pos).theta();
+    if (theta1 > theta2) {
+        using std::swap;
+        swap(theta1, theta2);
+        swap(p1, p2);
+    }
+    AngleOfInterest angle1;
+    angle1.theta = theta1 - acos(kBallRadius / (p1 - ball_pos).Magnitude());
+    angle1.type = kLineSegment;
+    angle1.dist_to_impact = (p1 - ball_pos).Magnitude();
+    angle1.segment = {p1, p2};
+
+    AngleOfInterest angle2;
+    angle2.theta = theta2 + acos(kBallRadius / (p2 - ball_pos).Magnitude());
+    angle2.type = kLineSegment;
+    angle2.dist_to_impact = (p2 - ball_pos).Magnitude();
+    angle2.segment = {p1, p2};
+
+    angle1.theta_enter = angle1.theta;
+    angle1.theta_exit = angle2.theta;
+    angle2.theta_enter = angle1.theta;
+    angle2.theta_exit = angle2.theta;
+
+    angles->push_back(angle1);
+    angles->push_back(angle2);
+}
+
+void add_angles_of_interest_from_polygon(Vec2 ball_pos, const
+        std::vector<MyPoint>& polygon, std::vector<AngleOfInterest>* angles) {
+    const MyPoint *last = nullptr;
+    const MyPoint *first = nullptr;
+    for (const auto &vertex : polygon) {
+        if (last != nullptr) {
+            add_angle_of_interest_from_line_segment(ball_pos,
+                    Vec2{static_cast<float>(last->x),
+                    static_cast<float>(last->y)},
+                    Vec2{static_cast<float>(vertex.x),
+                    static_cast<float>(vertex.y)}, angles);
+        } else {
+            first = &vertex;
+        }
+        last = &vertex;
+        add_angle_of_interest_from_line_segment(ball_pos,
+                Vec2{static_cast<float>(last->x), static_cast<float>(last->y)},
+                Vec2{static_cast<float>(first->x),
+                static_cast<float>(first->y)}, angles);
+    }
+}
+
 }  // namespace
 
 Point Subgoals::next_goal(Point ball_pos) {
-  for (int i = subgoals().size() - 1; i > next_goal_index_; --i) {
-    const auto &sub_goal = subgoals()[i];
-    if ((ball_pos.x - sub_goal.x) * (ball_pos.x - sub_goal.x) +
-            (ball_pos.y - sub_goal.y) * (ball_pos.y - sub_goal.y) <
-        20 * 20) {
-      next_goal_index_ = std::min(i + 1, static_cast<int>(subgoals().size() - 1));
-      break;
+    angles_of_interest_.clear();
+    Vec2 ball_pos_vec2{static_cast<float>(ball_pos.x),
+                static_cast<float>(ball_pos.y)};
+    for (const auto& polygon : WallPolygons()) {
+        add_angles_of_interest_from_polygon(ball_pos_vec2, polygon,
+                &angles_of_interest_);
     }
-  }
-  return subgoals()[next_goal_index_];
+    for (const auto& hole : HoleCenters()) {
+        add_angles_of_interest_from_circle(ball_pos_vec2, Circle{Vec2{static_cast<float>(hole.x),
+                static_cast<float>(hole.y)}, 16}, &angles_of_interest_);
+    }
+    return Point(640 / 3, 30);
 }

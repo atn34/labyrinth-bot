@@ -33,24 +33,31 @@ float dist_from_roots(std::vector<float> roots) {
     return result;
 }
 
-float DotProduct(Vec p1, Vec p2) {
+float DotProduct(Vec2 p1, Vec2 p2) {
     return p1.x * p2.x + p1.y * p2.y;
-}
-
-
-float Magnitude(Vec p) {
-    return sqrt(p.x * p.x + p.y * p.y);
 }
 
 }  // namespace
 
-Vec Vec::MakeUnit() {
-    float magnitude = Magnitude(*this);
-    return Vec{x / magnitude, y / magnitude};
+Vec2 Vec2::MakeUnit() {
+    float magnitude = Magnitude();
+    return Vec2{x / magnitude, y / magnitude};
+}
+
+float Vec2::theta() const {
+    return atan2(y, x);
+}
+
+float Vec2::MagnitudeSquared() const {
+    return x * x + y * y;
+}
+
+float Vec2::Magnitude() const {
+    return sqrt(MagnitudeSquared());
 }
 
 // || start + t * direction - target || = r1 + r2, and then solve for t
-float DistanceToImpact(Circle start, Vec direction, Circle target) {
+float DistanceToImpact(Circle start, Vec2 direction, Circle target) {
     float x = start.p.x - target.p.x;
     float y = start.p.y - target.p.y;
     float x_dir = direction.x;
@@ -67,7 +74,7 @@ float DistanceToImpact(Circle start, Vec direction, Circle target) {
 // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line.
 // Set formula for distance from line containing (x1, y1) and (x2, y2)
 // to (x(t), y(t)) equal to radius of circle and solve for t.
-float DistanceToImpact(Circle start, Vec direction, LineSegment target) {
+float DistanceToImpact(Circle start, Vec2 direction, LineSegment target) {
     float x1 = target.p1.x;
     float x2 = target.p2.x;
     float y1 = target.p1.y;
@@ -91,10 +98,10 @@ float DistanceToImpact(Circle start, Vec direction, LineSegment target) {
     // We want to know if circle at start + t * direction touches target.
     // Project start + t * direction onto target:
     // https://en.wikipedia.org/wiki/Vector_projection.
-    Vec u = (target.p2 - target.p1).MakeUnit();
-    float projected = DotProduct(u, Vec{x0 + x_dir * t, y0 + y_dir * t} - target.p1);
+    Vec2 u = (target.p2 - target.p1).MakeUnit();
+    float projected = DotProduct(u, Vec2{x0 + x_dir * t, y0 + y_dir * t} - target.p1);
     float dist_to_segment = -1;
-    if (0 <= projected && projected <= Magnitude(target.p2 - target.p1)) {
+    if (0 <= projected && projected <= (target.p2 - target.p1).Magnitude()) {
         dist_to_segment = t;
     }
 

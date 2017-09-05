@@ -1,32 +1,35 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-struct Vec {
-    const float x;
-    const float y;
+struct Vec2 {
+    float x;
+    float y;
 
-    Vec MakeUnit();
+    Vec2 MakeUnit();
+    float theta() const;
+    float MagnitudeSquared() const;
+    float Magnitude() const;
 };
 
-inline Vec operator-(const Vec& p1, const Vec& p2) {
-    return Vec{p1.x - p2.x, p1.y - p2.y};
+inline Vec2 operator-(const Vec2& p1, const Vec2& p2) {
+    return Vec2{p1.x - p2.x, p1.y - p2.y};
 }
 
 struct LineSegment {
-    const Vec p1;
-    const Vec p2;
+    Vec2 p1;
+    Vec2 p2;
 };
 
 struct Circle {
-    const Vec p;
-    const float r;
+    Vec2 p;
+    float r;
 };
 
 /// Returns the minimum distance |start| would have to move along |direction| in
 /// order to touch |target|, or a negative value if |start| will not touch
 /// |target|.  Preconditions: |start| is not touching |target|, and |direction|
 /// is unit.
-float DistanceToImpact(Circle start, Vec direction, Circle target);
-float DistanceToImpact(Circle start, Vec direction, LineSegment target);
+float DistanceToImpact(Circle start, Vec2 direction, Circle target);
+float DistanceToImpact(Circle start, Vec2 direction, LineSegment target);
 
 #endif /* GEOMETRY_H */
