@@ -68,9 +68,16 @@ void add_obstacles_from_line_segment(
     std::vector<ObstacleOrGoal> *obstacles_and_goals) {
   float theta1 = (p1 - ball_pos).theta();
   float theta2 = (p2 - ball_pos).theta();
-  if (theta1 > theta2) {
-    std::swap(theta1, theta2);
-    std::swap(p1, p2);
+  if (std::abs(theta1 - theta2) < M_PI) {
+      if (theta1 > theta2) {
+        std::swap(theta1, theta2);
+        std::swap(p1, p2);
+      }
+  } else {
+      if (theta1 < 0) {
+        std::swap(theta1, theta2);
+        std::swap(p1, p2);
+      }
   }
   ObstacleOrGoal obstacle;
   obstacle.type = kLineSegment;
