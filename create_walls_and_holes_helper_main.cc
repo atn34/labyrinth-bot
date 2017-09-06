@@ -60,8 +60,10 @@ int main(int argc, char *argv[]) {
       }
       last = &vertex;
     }
-    line(board, Point(last->x, last->y), Point(first->x, first->y),
-         Scalar(0, 255, 0));
+    if (last != nullptr) {
+        line(board, Point(last->x, last->y), Point(first->x, first->y),
+             Scalar(0, 255, 0));
+    }
   }
 
   for (const auto &hole : HoleCenters()) {

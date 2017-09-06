@@ -41,8 +41,6 @@ const std::vector<Vec2> &subgoals() {
       }
     }
     out->push_back(start);
-
-    std::reverse(out->begin(), out->end());
     return out;
   }();
   return *result;
@@ -148,59 +146,55 @@ Vec2 Subgoals::next_goal(
     }
   }
   for (auto &obstacle_or_goal : obstacles_and_goals_) {
-    angles_of_interest_[obstacle_or_goal.theta_enter] = &obstacle_or_goal;
+    angles_of_interest_.push_back({obstacle_or_goal.theta_enter, &obstacle_or_goal});
     if (obstacle_or_goal.type != kGoal) {
-      angles_of_interest_[obstacle_or_goal.theta_exit] = &obstacle_or_goal;
+        angles_of_interest_.push_back({obstacle_or_goal.theta_exit, &obstacle_or_goal});
     }
   }
+  std::sort(angles_of_interest_.begin(), angles_of_interest_.end());
 
   Vec2 best_subgoal;
   int best_subgoal_index = subgoals().size();
   for (const auto &pair : angles_of_interest_) {
     float theta = pair.first;
+    // Update dist_to_impact for closest obstacles.
+    if (obstacles_by_dist_to_impact_.size() > 0) {
+      auto closests = obstacles_by_dist_to_impact_.begin()->second;
+      obstacles_by_dist_to_impact_.erase(
+          obstacles_by_dist_to_impact_.begin());
+      for (ObstacleOrGoal* closest : closests) {
+          closest->dist_to_impact = closest->DistToImpact(ball_pos, theta);
+          obstacles_by_dist_to_impact_[closest->dist_to_impact].push_back(closest);
+      }
+    }
     if (pair.second->type == kGoal) {
       const ObstacleOrGoal *goal = pair.second;
 
-      auto *first_obstacle = obstacles_by_dist_to_impact_.size() > 0
-                                 ? obstacles_by_dist_to_impact_.begin()->second
-                                 : nullptr;
+      float dist_to_impact = obstacles_by_dist_to_impact_.size() > 0
+                                 ? obstacles_by_dist_to_impact_.begin()->first
+                                 : -1;
       if (debug_callback != nullptr) {
-          if (first_obstacle != nullptr) {
-              debug_callback(theta, first_obstacle->DistToImpact(ball_pos, theta));
-          } else {
+          if (dist_to_impact < 0) {
               debug_callback(theta, goal->dist_to_impact);
+          } else {
+              debug_callback(theta, dist_to_impact);
           }
       }
-      if (first_obstacle != nullptr) {
-        if (first_obstacle->DistToImpact(ball_pos, theta) < goal->dist_to_impact &&
-            goal->goal_index < best_subgoal_index) {
-          best_subgoal_index = goal->goal_index;
-          best_subgoal = goal->goal;
-        }
-      } else {
-        if (goal->goal_index < best_subgoal_index) {
-          best_subgoal_index = goal->goal_index;
-          best_subgoal = goal->goal;
-        }
+      if ((dist_to_impact < 0 || goal->dist_to_impact < dist_to_impact) &&
+          goal->goal_index < best_subgoal_index) {
+        best_subgoal_index = goal->goal_index;
+        best_subgoal = goal->goal;
       }
     } else {
-      const ObstacleOrGoal *obstacle = pair.second;
+      ObstacleOrGoal *obstacle = pair.second;
       if (theta == obstacle->theta_exit) {
-        obstacles_by_dist_to_impact_.erase(obstacle->dist_to_impact);
+        auto iter = obstacles_by_dist_to_impact_.find(obstacle->dist_to_impact);
+        iter->second.erase(
+            std::remove(iter->second.begin(), iter->second.end(), obstacle),
+            iter->second.end());
       } else {
-        // Update dist_to_impact for current closest obstacle if there is one.
-        if (obstacles_by_dist_to_impact_.size() > 0) {
-          ObstacleOrGoal *closest =
-              obstacles_by_dist_to_impact_.begin()->second;
-          obstacles_by_dist_to_impact_.erase(
-              obstacles_by_dist_to_impact_.begin());
-          closest->dist_to_impact = closest->DistToImpact(ball_pos, theta);
-          obstacles_by_dist_to_impact_[closest->dist_to_impact] = closest;
-        }
-
         ObstacleOrGoal *new_obstacle = pair.second;
-        obstacles_by_dist_to_impact_[new_obstacle->dist_to_impact] =
-            new_obstacle;
+        obstacles_by_dist_to_impact_[new_obstacle->dist_to_impact].push_back(new_obstacle);
       }
     }
   }

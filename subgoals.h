@@ -43,8 +43,8 @@ class Subgoals {
 
  private:
   std::vector<ObstacleOrGoal> obstacles_and_goals_;
-  std::map<float, ObstacleOrGoal *> angles_of_interest_;
-  std::map<float, ObstacleOrGoal *> obstacles_by_dist_to_impact_;
+  std::vector<std::pair<float, ObstacleOrGoal *>> angles_of_interest_;
+  std::map<float, std::vector<ObstacleOrGoal *>> obstacles_by_dist_to_impact_;
 };
 
 #endif /* NEXT_SUBGOAL_H */
