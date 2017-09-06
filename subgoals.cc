@@ -56,11 +56,8 @@ void add_obstacles_from_circle(
   ObstacleOrGoal obstacle;
   obstacle.type = kCircle;
   obstacle.dist_to_impact = (c.r + kBallRadius) / tan(delta_theta);
-  obstacle.theta_enter = theta - delta_theta;
-  obstacle.theta_exit = theta + delta_theta;
-  if (obstacle.theta_exit < obstacle.theta_enter) {
-      std::swap(obstacle.theta_exit, obstacle.theta_enter);
-  }
+  obstacle.theta_enter = WrapAngle(theta - delta_theta);
+  obstacle.theta_exit = WrapAngle(theta + delta_theta);
   obstacle.circle = c;
 
   obstacles_and_goals->push_back(obstacle);
@@ -79,9 +76,9 @@ void add_obstacles_from_line_segment(
   obstacle.type = kLineSegment;
   obstacle.dist_to_impact = (p1 - ball_pos).Magnitude();
   obstacle.theta_enter =
-      theta1 - asin(kBallRadius / (p1 - ball_pos).Magnitude());
+      WrapAngle(theta1 - asin(kBallRadius / (p1 - ball_pos).Magnitude()));
   obstacle.theta_exit =
-      theta2 + asin(kBallRadius / (p2 - ball_pos).Magnitude());
+      WrapAngle(theta2 + asin(kBallRadius / (p2 - ball_pos).Magnitude()));
   obstacle.segment = {p1, p2};
 
   obstacles_and_goals->push_back(obstacle);
@@ -146,25 +143,45 @@ Vec2 Subgoals::next_goal(
     }
   }
   for (auto &obstacle_or_goal : obstacles_and_goals_) {
-    angles_of_interest_.push_back({obstacle_or_goal.theta_enter, &obstacle_or_goal});
+    angles_of_interest_.push_back({{obstacle_or_goal.theta_enter, true}, &obstacle_or_goal});
     if (obstacle_or_goal.type != kGoal) {
-        angles_of_interest_.push_back({obstacle_or_goal.theta_exit, &obstacle_or_goal});
+        angles_of_interest_.push_back({{obstacle_or_goal.theta_exit, false}, &obstacle_or_goal});
     }
   }
   std::sort(angles_of_interest_.begin(), angles_of_interest_.end());
 
   Vec2 best_subgoal;
   int best_subgoal_index = subgoals().size();
+
+  bool initialized_obstacles_by_dist_to_impact = false;
   for (const auto &pair : angles_of_interest_) {
-    float theta = pair.first;
+    float theta = pair.first.first;
+
+    if (!initialized_obstacles_by_dist_to_impact) {
+        initialized_obstacles_by_dist_to_impact = true;
+        for (auto& obstacle_or_goal : obstacles_and_goals_) {
+            if (obstacle_or_goal.type != kGoal) {
+                float dist_to_impact = obstacle_or_goal.DistToImpact(ball_pos, theta);
+                if (dist_to_impact >= 0) {
+                    obstacle_or_goal.dist_to_impact = dist_to_impact;
+                    obstacles_by_dist_to_impact_[dist_to_impact].insert(&obstacle_or_goal);
+                }
+            }
+        }
+    }
+
     // Update dist_to_impact for closest obstacles.
     if (obstacles_by_dist_to_impact_.size() > 0) {
       auto closests = obstacles_by_dist_to_impact_.begin()->second;
       obstacles_by_dist_to_impact_.erase(
           obstacles_by_dist_to_impact_.begin());
-      for (ObstacleOrGoal* closest : closests) {
-          closest->dist_to_impact = closest->DistToImpact(ball_pos, theta);
-          obstacles_by_dist_to_impact_[closest->dist_to_impact].push_back(closest);
+      for (ObstacleOrGoal *closest : closests) {
+        float new_dist = closest->DistToImpact(ball_pos, theta);
+        if (new_dist >= 0) {
+          closest->dist_to_impact = new_dist;
+        }
+        obstacles_by_dist_to_impact_[closest->dist_to_impact].insert(
+            closest);
       }
     }
     if (pair.second->type == kGoal) {
@@ -187,16 +204,17 @@ Vec2 Subgoals::next_goal(
       }
     } else {
       ObstacleOrGoal *obstacle = pair.second;
-      if (theta == obstacle->theta_exit) {
-        auto iter = obstacles_by_dist_to_impact_.find(obstacle->dist_to_impact);
-        iter->second.erase(
-            std::remove(iter->second.begin(), iter->second.end(), obstacle),
-            iter->second.end());
+      if (pair.first.second) {
+        obstacles_by_dist_to_impact_[obstacle->dist_to_impact].insert(obstacle);
       } else {
-        ObstacleOrGoal *new_obstacle = pair.second;
-        obstacles_by_dist_to_impact_[new_obstacle->dist_to_impact].push_back(new_obstacle);
+          auto iter =
+              obstacles_by_dist_to_impact_.find(obstacle->dist_to_impact);
+          if (iter != obstacles_by_dist_to_impact_.end()) {
+            iter->second.erase(obstacle);
+          }
       }
     }
+
   }
 
   return best_subgoal;

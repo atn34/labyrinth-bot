@@ -14,6 +14,10 @@ struct Vec2 {
   float Magnitude() const;
 };
 
+inline float WrapAngle(float theta) {
+    return atan2(sin(theta), cos(theta));
+}
+
 inline Vec2 UnitVec2FromTheta(float theta) {
   return Vec2{cosf(theta), sinf(theta)};
 }
