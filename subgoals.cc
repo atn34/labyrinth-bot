@@ -110,6 +110,10 @@ void add_obstacles_from_polygon(
 
 }  // namespace
 
+Subgoals::Subgoals() {
+  current_subgoal_ = subgoals().back();
+}
+
 float ObstacleOrGoal::DistToImpact(Vec2 ball_pos, float theta) {
   assert(type != kGoal);
   if (type == kLineSegment) {
@@ -159,7 +163,6 @@ Vec2 Subgoals::next_goal(
   }
   std::sort(angles_of_interest_.begin(), angles_of_interest_.end());
 
-  Vec2 best_subgoal;
   int best_subgoal_index = subgoals().size();
 
   {
@@ -194,7 +197,7 @@ Vec2 Subgoals::next_goal(
         if (dist_to_first_obstacle < 0 || goal->dist_to_impact < dist_to_first_obstacle) {
             if (debug_callback) debug_callback(theta, goal->dist_to_impact);
             if (goal->goal_index < best_subgoal_index) {
-                best_subgoal = goal->goal;
+                current_subgoal_ = goal->goal;
                 best_subgoal_index = goal->goal_index;
             }
         }
@@ -208,5 +211,5 @@ Vec2 Subgoals::next_goal(
     }
   }
 
-  return best_subgoal;
+  return current_subgoal_;
 }

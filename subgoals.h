@@ -35,7 +35,7 @@ struct ObstacleOrGoal {
 
 class Subgoals {
  public:
-  Subgoals() = default;
+  Subgoals();
   virtual ~Subgoals() = default;
 
   Vec2 next_goal(Vec2 ball_pos,
@@ -43,6 +43,8 @@ class Subgoals {
                      debug_callback = nullptr);
 
  private:
+  Vec2 current_subgoal_;
+
   std::vector<ObstacleOrGoal> obstacles_;
   std::vector<ObstacleOrGoal> goals_;
   std::vector<std::pair<std::pair<float, bool>, ObstacleOrGoal *>> angles_of_interest_;
