@@ -43,9 +43,10 @@ class Subgoals {
                      debug_callback = nullptr);
 
  private:
-  std::vector<ObstacleOrGoal> obstacles_and_goals_;
+  std::vector<ObstacleOrGoal> obstacles_;
+  std::vector<ObstacleOrGoal> goals_;
   std::vector<std::pair<std::pair<float, bool>, ObstacleOrGoal *>> angles_of_interest_;
-  std::map<float, std::unordered_set<ObstacleOrGoal *>> obstacles_by_dist_to_impact_;
+  std::unordered_set<ObstacleOrGoal *> obstacles_in_line_of_sight_;
 };
 
 #endif /* NEXT_SUBGOAL_H */
