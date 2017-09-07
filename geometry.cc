@@ -23,7 +23,7 @@ std::vector<float> solve_quadratic(float a, float b, float c) {
 float dist_from_roots(std::vector<float> roots) {
   float result = -1;
   for (const auto &root : roots) {
-    if (root > 0) {
+    if (root >= 0) {
       if (result < 0) {
         result = root;
       } else {
