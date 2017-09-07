@@ -9,6 +9,7 @@
 #include "motor_client.h"
 #include "perspective_transform.h"
 #include "subgoals.h"
+#include "walls_and_holes.h"
 
 using namespace cv;
 
@@ -27,11 +28,6 @@ int main(int, char **) {
 
   Vec2 goal = {};
   Vec2 accumulated_error = {};
-
-  const std::vector<Vec2> problem_holes = {
-      {130, 98}, {190, 98}, {25, 256}, {40, 30},
-      {26, 376}, {80, 99},  {81, 343}, {82, 428},
-  };
 
   for (;;) {
     cap >> src;
@@ -113,7 +109,7 @@ int main(int, char **) {
          Scalar(255, 0, 0));
 
     float repel = 40000;
-    for (const auto &hole : problem_holes) {
+    for (const auto &hole : HoleCenters()) {
       float x_force = x - hole.x;
       float y_force = y - hole.y;
 
