@@ -6,7 +6,7 @@
 
 using namespace cv;
 
-bool MeasureBallPosition(Mat perspective_transformed, Point *measurement) {
+bool MeasureBallPosition(Mat perspective_transformed, Vec2 *measurement) {
   static const ThresholdBall &threshold_ball = *new ThresholdBall;
   Mat masked = threshold_ball.Threshold(perspective_transformed);
 

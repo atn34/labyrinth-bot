@@ -32,7 +32,7 @@ int main(int, char **) {
       break;
     }
 
-    Point measured;
+    Vec2 measured;
     if (!MeasureBallPosition(transformed, &measured)) {
       std::cout << "finding ball failed" << std::endl;
       break;

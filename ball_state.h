@@ -5,6 +5,8 @@
 
 #include "opencv2/opencv.hpp"
 
+#include "geometry.h"
+
 // Kalman filter usage based on
 // http://opencvexamples.blogspot.com/2014/01/kalman-filter-implementation-tracking.html
 class BallState {
@@ -16,25 +18,25 @@ class BallState {
 
   virtual ~BallState() = default;
 
-  void update(cv::Point measured);
+  void update(Vec2 measured);
 
   void reset();
 
-  cv::Point2f position() const {
+  Vec2 position() const {
     assert(initialized_);
-    return cv::Point2f(estimated_.at<float>(0), estimated_.at<float>(1));
+    return Vec2{estimated_.at<float>(0), estimated_.at<float>(1)};
   }
-  cv::Point2f velocity() const {
+  Vec2 velocity() const {
     assert(initialized_);
-    return cv::Point2f(estimated_.at<float>(2), estimated_.at<float>(3));
+    return Vec2{estimated_.at<float>(2), estimated_.at<float>(3)};
   }
-  cv::Point2f acceleration() const {
+  Vec2 acceleration() const {
     assert(initialized_);
-    return cv::Point2f(estimated_.at<float>(4), estimated_.at<float>(5));
+    return Vec2{estimated_.at<float>(4), estimated_.at<float>(5)};
   }
 
  private:
-  void initialize(cv::Point measured);
+  void initialize(Vec2 measured);
 
   cv::KalmanFilter kf_;
   cv::Mat estimated_;

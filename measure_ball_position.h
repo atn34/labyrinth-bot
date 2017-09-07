@@ -2,8 +2,10 @@
 
 #include "opencv2/opencv.hpp"
 
+#include "geometry.h"
+
 bool MeasureBallPosition(cv::Mat perspective_transformed,
-                         cv::Point *measurement);
+                         Vec2 *measurement);
 
 #define MEASURE_BALL_POSITION_H
 #endif /* ifndef MEASURE_BALL_POSITION_H */

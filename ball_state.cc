@@ -2,7 +2,7 @@
 
 using namespace cv;
 
-void BallState::update(Point measured) {
+void BallState::update(Vec2 measured) {
   measured_(0) = measured.x;
   measured_(1) = measured.y;
   if (!initialized_) {
@@ -14,7 +14,7 @@ void BallState::update(Point measured) {
   estimated_ = kf_.correct(measured_);
 }
 
-void BallState::initialize(Point measured) {
+void BallState::initialize(Vec2 measured) {
   /* clang-format off */
   kf_.transitionMatrix = (Mat_<float>(6, 6)
   << 1,0,1,0,.5, 0,
