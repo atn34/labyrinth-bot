@@ -26,7 +26,7 @@ int main(int, char **) {
   Subgoals sub_goals;
   std::unique_ptr<MotorClient> motor_client;
 
-  Vec2 goal = {};
+  Vec2 goal = {640 / 2, 30};
   Vec2 accumulated_error = {};
 
   for (;;) {
@@ -59,47 +59,36 @@ int main(int, char **) {
       break;
     }
 
-    float x = ball_state.position().x;
-    float y = ball_state.position().y;
-    float vx = ball_state.velocity().x;
-    float vy = ball_state.velocity().y;
-    float ax = ball_state.acceleration().x;
-    float ay = ball_state.acceleration().y;
+    goal = sub_goals.next_goal(ball_state.position());
 
-    float px = 0;
-    float py = 0;
-    float dx = 0;
-    float dy = 0;
-    float ex = goal.x - x;
-    float ey = goal.y - y;
-    accumulated_error.x += ex;
-    accumulated_error.y += ey;
-    float ix = 0.02;
-    float iy = 0.02;
+    Vec2 error = (goal - ball_state.position()).MakeUnit() *
+        std::min<float>((goal - ball_state.position()).Magnitude() / 5, 5);
 
-    dx = 10;
-    dy = 10;
-
-    Vec2 next_goal = sub_goals.next_goal(Vec2{x, y});
-
-    if (vx * vx + vy * vy >= 2) {
-      accumulated_error.x = ex / ix;
-      accumulated_error.y = ey / iy;
+    accumulated_error += error;
+    if (ball_state.velocity().MagnitudeSquared() >= 2) {
+      accumulated_error *= 0.95;
     }
 
-    goal = next_goal;
+    Vec2 p{5, 5};
+    Vec2 i{0.1, 0.1};
+    Vec2 d{5, 5};
 
-    float frame_lookahead = 2;
+    float lookahead = 4;
+    
+    float px_term = error.x * p.x;
+    float py_term = error.y * p.y;
+    float ix_term = accumulated_error.x * i.x;
+    float iy_term = accumulated_error.y * i.y;
+    float dx_term = (ball_state.velocity().x + lookahead *
+            ball_state.acceleration().x) * d.x;
+    float dy_term = (ball_state.velocity().y + lookahead *
+            ball_state.acceleration().y) * d.y;
 
-    float px_term = ex * px;
-    float py_term = ey * py;
-    float ix_term = accumulated_error.x * ix;
-    float iy_term = accumulated_error.y * iy;
-    float dx_term = (vx + frame_lookahead * ax) * dx;
-    float dy_term = (vy * frame_lookahead * ay) * dy;
+    float motor_x = px_term + ix_term - dx_term;
+    float motor_y = py_term + iy_term - dy_term;
 
-    int motor_x = px_term + ix_term - dx_term;
-    int motor_y = px_term + iy_term - dx_term;
+    float x = ball_state.position().x;
+    float y = ball_state.position().y;
 
     line(transformed, Point(x, y), Point(x, y) + Point(px_term, py_term),
          Scalar(0, 0, 255));
@@ -108,17 +97,16 @@ int main(int, char **) {
     line(transformed, Point(x, y), Point(x, y) + Point(ix_term, iy_term),
          Scalar(255, 0, 0));
 
-    float repel = 40000;
+    float repel = 20000;
     for (const auto &hole : HoleCenters()) {
-      float x_force = x - hole.x;
-      float y_force = y - hole.y;
+      Vec2 force = ball_state.position() - hole;
 
       float avoid_hole_x_adjustment =
-          repel * x_force / (sqrt(x_force * x_force + y_force * y_force) *
-                             (x_force * x_force + y_force * y_force));
+          repel * force.x / (sqrt(force.x * force.x + force.y * force.y) *
+                             (force.x * force.x + force.y * force.y));
       float avoid_hole_y_adjustment =
-          repel * y_force / (sqrt(x_force * x_force + y_force * y_force) *
-                             (x_force * x_force + y_force * y_force));
+          repel * force.y / (sqrt(force.x * force.x + force.y * force.y) *
+                             (force.x * force.x + force.y * force.y));
 
       line(transformed, Point(hole.x, hole.y),
            Point(hole.x, hole.y) +

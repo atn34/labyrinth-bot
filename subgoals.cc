@@ -36,7 +36,7 @@ const std::vector<Vec2> &subgoals() {
     for (auto p = parents.find(finish);
          p != parents.end() && p->second != start;
          p = parents.find(p->second)) {
-      if (iter++ % 15 == 0) {
+      if (iter++ % 20 == 0) {
         out->push_back(p->second);
       }
     }

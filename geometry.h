@@ -12,6 +12,17 @@ struct Vec2 {
   float theta() const;
   float MagnitudeSquared() const;
   float Magnitude() const;
+
+  Vec2& operator+=(const Vec2& other) {
+      x += other.x;
+      y += other.y;
+      return *this;
+  }
+  Vec2& operator*=(float other) {
+      x *= other;
+      y *= other;
+      return *this;
+  }
 };
 
 inline float WrapAngle(float theta) {
