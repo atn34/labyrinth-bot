@@ -13,21 +13,19 @@ struct Vec2 {
   float MagnitudeSquared() const;
   float Magnitude() const;
 
-  Vec2& operator+=(const Vec2& other) {
-      x += other.x;
-      y += other.y;
-      return *this;
+  Vec2 &operator+=(const Vec2 &other) {
+    x += other.x;
+    y += other.y;
+    return *this;
   }
-  Vec2& operator*=(float other) {
-      x *= other;
-      y *= other;
-      return *this;
+  Vec2 &operator*=(float other) {
+    x *= other;
+    y *= other;
+    return *this;
   }
 };
 
-inline float WrapAngle(float theta) {
-    return atan2(sin(theta), cos(theta));
-}
+inline float WrapAngle(float theta) { return atan2(sin(theta), cos(theta)); }
 
 inline Vec2 UnitVec2FromTheta(float theta) {
   return Vec2{cosf(theta), sinf(theta)};

@@ -21,15 +21,15 @@ struct ObstacleOrGoal {
   float DistToImpact(Vec2 ball_pos, float theta);
 
   union {
-    struct {/* line segment */
+    struct { /* line segment */
       LineSegment segment;
     };
 
-    struct {/* circle */
+    struct { /* circle */
       Circle circle;
     };
 
-    struct {/* goal */
+    struct { /* goal */
       Vec2 goal;
       int goal_index;
     };
@@ -42,15 +42,15 @@ class Subgoals {
   virtual ~Subgoals() = default;
 
   Vec2 next_goal(Vec2 ball_pos, bool *touching_obstacle,
-                 std::function<void(float, float)>
-                     debug_callback = nullptr);
+                 std::function<void(float, float)> debug_callback = nullptr);
 
  private:
   Vec2 current_subgoal_;
 
   std::vector<ObstacleOrGoal> obstacles_;
   std::vector<ObstacleOrGoal> goals_;
-  std::vector<std::pair<std::pair<float, bool>, ObstacleOrGoal *>> angles_of_interest_;
+  std::vector<std::pair<std::pair<float, bool>, ObstacleOrGoal *>>
+      angles_of_interest_;
   std::unordered_set<ObstacleOrGoal *> obstacles_in_line_of_sight_;
 };
 

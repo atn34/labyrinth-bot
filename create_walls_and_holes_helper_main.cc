@@ -3,8 +3,8 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
 
-#include "walls_and_holes.h"
 #include "subgoals.h"
+#include "walls_and_holes.h"
 
 using namespace cv;
 
@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
       last = &vertex;
     }
     if (last != nullptr) {
-        line(board, Point(last->x, last->y), Point(first->x, first->y),
-             Scalar(0, 255, 0));
+      line(board, Point(last->x, last->y), Point(first->x, first->y),
+           Scalar(0, 255, 0));
     }
   }
 
@@ -83,12 +83,12 @@ int main(int argc, char *argv[]) {
       bool touching_obstacle;
       Vec2 subgoal = subgoals.next_goal(
           mouse, &touching_obstacle, [&](float theta, float length) {
-            Vec2 target =
-                mouse + UnitVec2FromTheta(theta) * length;
+            Vec2 target = mouse + UnitVec2FromTheta(theta) * length;
             line(with_cursors, Point(mouse.x, mouse.y),
                  Point(target.x, target.y), Scalar(0, 0, 0));
           });
-      circle(with_cursors, Point(mouse.x, mouse.y), kBallRadius, touching_obstacle ? Scalar(255, 255, 255) : Scalar(0, 0, 0));
+      circle(with_cursors, Point(mouse.x, mouse.y), kBallRadius,
+             touching_obstacle ? Scalar(255, 255, 255) : Scalar(0, 0, 0));
       circle(with_cursors, Point(subgoal.x, subgoal.y), 10, Scalar(0, 255, 0));
     }
     imshow("create walls", with_cursors);

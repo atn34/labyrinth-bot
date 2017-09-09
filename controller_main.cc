@@ -62,7 +62,8 @@ int main(int, char **) {
     bool touching_obstacle = false;
     goal = sub_goals.next_goal(ball_state.position(), &touching_obstacle);
 
-    Vec2 error = (goal - ball_state.position()).MakeUnit() *
+    Vec2 error =
+        (goal - ball_state.position()).MakeUnit() *
         std::min<float>((goal - ball_state.position()).Magnitude() / 5, 5);
 
     accumulated_error += error;
@@ -75,15 +76,17 @@ int main(int, char **) {
     Vec2 d{5, 5};
 
     float lookahead = 4;
-    
+
     float px_term = error.x * p.x;
     float py_term = error.y * p.y;
     float ix_term = accumulated_error.x * i.x;
     float iy_term = accumulated_error.y * i.y;
-    float dx_term = (ball_state.velocity().x + lookahead *
-            ball_state.acceleration().x) * d.x;
-    float dy_term = (ball_state.velocity().y + lookahead *
-            ball_state.acceleration().y) * d.y;
+    float dx_term =
+        (ball_state.velocity().x + lookahead * ball_state.acceleration().x) *
+        d.x;
+    float dy_term =
+        (ball_state.velocity().y + lookahead * ball_state.acceleration().y) *
+        d.y;
 
     float motor_x = px_term + ix_term - dx_term;
     float motor_y = py_term + iy_term - dy_term;
@@ -122,8 +125,8 @@ int main(int, char **) {
     motor_client->step_to(MotorClient::VERTICAL, motor_y);
 
     circle(transformed, Point(goal.x, goal.y), 10, Scalar(0, 255, 0));
-    circle(transformed, Point(x, y), 10, touching_obstacle ? Scalar(0, 0, 0)
-            : Scalar(255, 255, 255));
+    circle(transformed, Point(x, y), 10,
+           touching_obstacle ? Scalar(0, 0, 0) : Scalar(255, 255, 255));
 
     imshow("Controller", transformed);
   }

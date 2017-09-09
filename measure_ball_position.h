@@ -4,8 +4,7 @@
 
 #include "geometry.h"
 
-bool MeasureBallPosition(cv::Mat perspective_transformed,
-                         Vec2 *measurement);
+bool MeasureBallPosition(cv::Mat perspective_transformed, Vec2 *measurement);
 
 #define MEASURE_BALL_POSITION_H
 #endif /* ifndef MEASURE_BALL_POSITION_H */
