@@ -7,6 +7,7 @@
 const std::vector<std::vector<Vec2>> &WallPolygons() {
   static const std::vector<std::vector<Vec2>> *result = []() {
     auto *out = new std::vector<std::vector<Vec2>>{
+{{4,3},{637,3},{637,477},{4,477},},
 {{156,1},{169,1},{169,35},{156,35},},
 {{1,51},{56,51},{56,59},{1,59},},
 {{3,146},{54,146},{54,154},{3,154},},

@@ -51,6 +51,11 @@ float Vec2::Magnitude() const { return sqrt(MagnitudeSquared()); }
 
 // || start + t * direction - target || = r1 + r2, and then solve for t
 float DistanceToImpact(Circle start, Vec2 direction, Circle target) {
+  if ((start.p - target.p).MagnitudeSquared() <= (start.r + target.r) *
+          (start.r + target.r)) {
+      return 0;
+  }
+
   float x = start.p.x - target.p.x;
   float y = start.p.y - target.p.y;
   float x_dir = direction.x;
@@ -83,12 +88,16 @@ float DistanceToImpact(Circle start, Vec2 direction, LineSegment target) {
       y2 * x_dir - y1 * x_dir - x2 * y_dir + x1 * y_dir;
   float kDenom = (y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1);
 
-  float a = kNumeratorLinearTerms * kNumeratorLinearTerms;
-  float b = 2 * kNumeratorConstants * kNumeratorLinearTerms;
-  float c =
-      kNumeratorConstants * kNumeratorConstants - kDenom * start.r * start.r;
+  float t = 0;
+  // If circle is not already intersecting line.
+  if (kNumeratorConstants * kNumeratorConstants / kDenom > start.r * start.r) {
+      float a = kNumeratorLinearTerms * kNumeratorLinearTerms;
+      float b = 2 * kNumeratorConstants * kNumeratorLinearTerms;
+      float c =
+          kNumeratorConstants * kNumeratorConstants - kDenom * start.r * start.r;
 
-  float t = dist_from_roots(solve_quadratic(a, b, c));
+      t = dist_from_roots(solve_quadratic(a, b, c));
+  }
 
   // We want to know if circle at start + t * direction touches target.
   // Project start + t * direction onto target:

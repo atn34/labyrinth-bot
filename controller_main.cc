@@ -59,7 +59,8 @@ int main(int, char **) {
       break;
     }
 
-    goal = sub_goals.next_goal(ball_state.position());
+    bool touching_obstacle = false;
+    goal = sub_goals.next_goal(ball_state.position(), &touching_obstacle);
 
     Vec2 error = (goal - ball_state.position()).MakeUnit() *
         std::min<float>((goal - ball_state.position()).Magnitude() / 5, 5);
@@ -121,6 +122,8 @@ int main(int, char **) {
     motor_client->step_to(MotorClient::VERTICAL, motor_y);
 
     circle(transformed, Point(goal.x, goal.y), 10, Scalar(0, 255, 0));
+    circle(transformed, Point(x, y), 10, touching_obstacle ? Scalar(0, 0, 0)
+            : Scalar(255, 255, 255));
 
     imshow("Controller", transformed);
   }

@@ -7,6 +7,9 @@
 
 #include "geometry.h"
 
+constexpr float kBallRadius = 10;
+constexpr float kHoleRadius = 10;
+
 enum ObstacleOrGoalType { kLineSegment, kCircle, kGoal };
 
 struct ObstacleOrGoal {
@@ -38,7 +41,7 @@ class Subgoals {
   Subgoals();
   virtual ~Subgoals() = default;
 
-  Vec2 next_goal(Vec2 ball_pos,
+  Vec2 next_goal(Vec2 ball_pos, bool *touching_obstacle,
                  std::function<void(float, float)>
                      debug_callback = nullptr);
 

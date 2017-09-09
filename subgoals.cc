@@ -1,6 +1,7 @@
 #include "subgoals.h"
 
 #include <algorithm>
+#include <iostream>
 #include <math.h>
 #include <unordered_map>
 
@@ -45,8 +46,6 @@ const std::vector<Vec2> &subgoals() {
   }();
   return *result;
 }
-
-constexpr float kBallRadius = 10;
 
 void add_obstacles_from_circle(
     Vec2 ball_pos, Circle c, std::vector<ObstacleOrGoal> *obstacles) {
@@ -130,6 +129,7 @@ float ObstacleOrGoal::DistToImpact(Vec2 ball_pos, float theta) {
 // intersect any obstacles.
 Vec2 Subgoals::next_goal(
     Vec2 ball_pos,
+    bool* touching_obstacle,
     std::function<void(float, float)> debug_callback) {
   obstacles_.clear();
   goals_.clear();
@@ -139,7 +139,7 @@ Vec2 Subgoals::next_goal(
     add_obstacles_from_polygon(ball_pos, polygon, &obstacles_);
   }
   for (const auto &hole : HoleCenters()) {
-    add_obstacles_from_circle(ball_pos, Circle{hole, 10},
+    add_obstacles_from_circle(ball_pos, Circle{hole, kHoleRadius},
                               &obstacles_);
   }
   {
@@ -165,17 +165,24 @@ Vec2 Subgoals::next_goal(
 
   int best_subgoal_index = subgoals().size();
 
+  if (touching_obstacle != nullptr) {
+      *touching_obstacle = false;
+  }
+
   {
       float theta = angles_of_interest_.begin()->first.first;
       for (auto& obstacle : obstacles_) {
           float d = obstacle.DistToImpact(ball_pos, theta);
+          if (d == 0) {
+              if (touching_obstacle != nullptr) {
+                  *touching_obstacle = true;
+              }
+          }
           if (d >= 0) {
               obstacles_in_line_of_sight_.insert(&obstacle);
           }
       }
   }
-
-  auto dist_to_impact_before = obstacles_in_line_of_sight_;
 
   for (const auto &pair : angles_of_interest_) {
     float theta = pair.first.first;
@@ -194,8 +201,9 @@ Vec2 Subgoals::next_goal(
                 }
             }
         }
+
+        if (debug_callback) debug_callback(theta, dist_to_first_obstacle);
         if (dist_to_first_obstacle < 0 || goal->dist_to_impact < dist_to_first_obstacle) {
-            if (debug_callback) debug_callback(theta, goal->dist_to_impact);
             if (goal->goal_index < best_subgoal_index) {
                 current_subgoal_ = goal->goal;
                 best_subgoal_index = goal->goal_index;
@@ -210,6 +218,7 @@ Vec2 Subgoals::next_goal(
         }
     }
   }
+
 
   return current_subgoal_;
 }

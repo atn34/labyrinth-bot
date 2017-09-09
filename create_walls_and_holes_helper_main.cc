@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
   }
 
   for (const auto &hole : HoleCenters()) {
-    circle(board, Point(hole.x, hole.y), 16, Scalar(0, 255, 0));
+    circle(board, Point(hole.x, hole.y), kHoleRadius, Scalar(0, 255, 0));
   }
 
   Subgoals subgoals;
@@ -80,14 +80,15 @@ int main(int argc, char *argv[]) {
       rectangle(with_cursors, mouse_state.upper_left, mouse_state.mouse,
                 Scalar(0, 0, 0));
     } else {
-      circle(with_cursors, Point(mouse.x, mouse.y), 10, Scalar(0, 0, 0));
+      bool touching_obstacle;
       Vec2 subgoal = subgoals.next_goal(
-          mouse, [&](float theta, float length) {
+          mouse, &touching_obstacle, [&](float theta, float length) {
             Vec2 target =
                 mouse + UnitVec2FromTheta(theta) * length;
             line(with_cursors, Point(mouse.x, mouse.y),
                  Point(target.x, target.y), Scalar(0, 0, 0));
           });
+      circle(with_cursors, Point(mouse.x, mouse.y), kBallRadius, touching_obstacle ? Scalar(255, 255, 255) : Scalar(0, 0, 0));
       circle(with_cursors, Point(subgoal.x, subgoal.y), 10, Scalar(0, 255, 0));
     }
     imshow("create walls", with_cursors);
