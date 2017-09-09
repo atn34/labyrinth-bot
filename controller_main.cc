@@ -124,8 +124,8 @@ int main(int, char **) {
     motor_client->step_to(MotorClient::HORIZONTAL, motor_x);
     motor_client->step_to(MotorClient::VERTICAL, motor_y);
 
-    circle(transformed, Point(goal.x, goal.y), 10, Scalar(0, 255, 0));
-    circle(transformed, Point(x, y), 10,
+    circle(transformed, Point(goal.x, goal.y), kBallRadius, Scalar(0, 255, 0));
+    circle(transformed, Point(x, y), kBallRadius,
            touching_obstacle ? Scalar(0, 0, 0) : Scalar(255, 255, 255));
 
     imshow("Controller", transformed);
