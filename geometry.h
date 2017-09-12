@@ -2,6 +2,7 @@
 #define GEOMETRY_H
 
 #include <functional>
+#include <iostream>
 #include <math.h>
 
 struct Vec2 {
@@ -16,6 +17,11 @@ struct Vec2 {
   Vec2 &operator+=(const Vec2 &other) {
     x += other.x;
     y += other.y;
+    return *this;
+  }
+  Vec2 &operator-=(const Vec2 &other) {
+    x -= other.x;
+    y -= other.y;
     return *this;
   }
   Vec2 &operator*=(float other) {
@@ -33,6 +39,11 @@ inline Vec2 UnitVec2FromTheta(float theta) {
 
 inline Vec2 Vec2FromInt(int x, int y) {
   return Vec2{static_cast<float>(x), static_cast<float>(y)};
+}
+
+inline std::ostream &operator<<(std::ostream &stream, const Vec2 &p) {
+  stream << p.x << ", " << p.y;
+  return stream;
 }
 
 struct Vec2Hasher {

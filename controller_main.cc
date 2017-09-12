@@ -8,6 +8,7 @@
 #include "measure_ball_position.h"
 #include "motor_client.h"
 #include "perspective_transform.h"
+#include "ring_buffer.h"
 #include "subgoals.h"
 #include "walls_and_holes.h"
 
@@ -28,6 +29,8 @@ int main(int, char **) {
 
   Vec2 goal = {640 / 2, 30};
   Vec2 accumulated_error = {};
+  Vec2 motor_zeros = {};
+  RingBuffer<Vec2, 16> motor_command_history;
 
   for (;;) {
     cap >> src;
@@ -38,13 +41,13 @@ int main(int, char **) {
     flip(src, src, -1);
 
     if (!PerspectiveTransform(src, &transformed)) {
-      std::cout << "perspective transform failed" << std::endl;
+      std::cerr << "perspective transform failed" << std::endl;
       break;
     }
 
     Vec2 measured;
     if (!MeasureBallPosition(transformed, &measured)) {
-      std::cout << "measure ball position failed" << std::endl;
+      std::cerr << "measure ball position failed" << std::endl;
       break;
     }
 
@@ -68,28 +71,33 @@ int main(int, char **) {
 
     accumulated_error += error;
     if (ball_state.velocity().MagnitudeSquared() >= 2) {
-      accumulated_error *= 0.95;
+      accumulated_error *= 0.9;
+    }
+
+    if (std::abs(ball_state.velocity().x) * 10 > 10 &&
+        std::abs(ball_state.acceleration().x) * 100 < 2 &&
+        motor_command_history.full()) {
+      motor_zeros.x = motor_command_history.get(10).x;
+    }
+    if (std::abs(ball_state.velocity().y) * 10 > 10 &&
+        std::abs(ball_state.acceleration().y) * 100 < 2 &&
+        motor_command_history.full()) {
+      motor_zeros.y = motor_command_history.get(10).y;
     }
 
     Vec2 p{5, 5};
     Vec2 i{0.1, 0.1};
-    Vec2 d{5, 5};
-
-    float lookahead = 4;
+    Vec2 d{15, 15};
 
     float px_term = error.x * p.x;
     float py_term = error.y * p.y;
     float ix_term = accumulated_error.x * i.x;
     float iy_term = accumulated_error.y * i.y;
-    float dx_term =
-        (ball_state.velocity().x + lookahead * ball_state.acceleration().x) *
-        d.x;
-    float dy_term =
-        (ball_state.velocity().y + lookahead * ball_state.acceleration().y) *
-        d.y;
+    float dx_term = ball_state.velocity().x * d.x;
+    float dy_term = ball_state.velocity().y * d.y;
 
-    float motor_x = px_term + ix_term - dx_term;
-    float motor_y = py_term + iy_term - dy_term;
+    Vec2 motor_command = {px_term + ix_term - dx_term,
+                          py_term + iy_term - dy_term};
 
     float x = ball_state.position().x;
     float y = ball_state.position().y;
@@ -101,7 +109,7 @@ int main(int, char **) {
     line(transformed, Point(x, y), Point(x, y) + Point(ix_term, iy_term),
          Scalar(255, 0, 0));
 
-    float repel = 20000;
+    float repel = 10000;
     for (const auto &hole : HoleCenters()) {
       Vec2 force = ball_state.position() - hole;
 
@@ -117,12 +125,21 @@ int main(int, char **) {
                Point(avoid_hole_x_adjustment, avoid_hole_y_adjustment),
            Scalar(255, 255, 255));
 
-      motor_x += avoid_hole_x_adjustment;
-      motor_y += avoid_hole_y_adjustment;
+      motor_command.x += avoid_hole_x_adjustment;
+      motor_command.y += avoid_hole_y_adjustment;
     }
 
-    motor_client->step_to(MotorClient::HORIZONTAL, motor_x);
-    motor_client->step_to(MotorClient::VERTICAL, motor_y);
+    std::cout << touching_obstacle << ", ";
+    std::cout << motor_command << ", ";
+    std::cout << motor_zeros << ", ";
+    std::cout << ball_state.position() << ", ";
+    std::cout << ball_state.velocity() << ", ";
+    std::cout << ball_state.acceleration() << std::endl;
+
+    motor_command += motor_zeros;
+    motor_command_history.add(motor_command);
+    motor_client->step_to(MotorClient::HORIZONTAL, motor_command.x);
+    motor_client->step_to(MotorClient::VERTICAL, motor_command.y);
 
     circle(transformed, Point(goal.x, goal.y), kBallRadius, Scalar(0, 255, 0));
     circle(transformed, Point(x, y), kBallRadius,
