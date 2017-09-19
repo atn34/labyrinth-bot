@@ -16,7 +16,7 @@ using namespace cv;
 
 int main(int, char **) {
   VideoCapture cap(1);
-  cap.set(CV_CAP_PROP_FPS, 60);
+  cap.set(CV_CAP_PROP_FPS, 30);
   if (!cap.isOpened()) return -1;
   namedWindow("Controller", CV_WINDOW_AUTOSIZE);
 
@@ -32,7 +32,7 @@ int main(int, char **) {
   Vec2 motor_command;
 
   for (int iter = 0;; ++iter) {
-    int64 start = cv::getTickCount();
+    int64 start = getTickCount();
 
     cap >> src;
     if (!src.data) {
@@ -86,10 +86,7 @@ int main(int, char **) {
     float dx_term = ball_state.velocity().x * d.x;
     float dy_term = ball_state.velocity().y * d.y;
 
-    if (iter % 5 == 0) {
-      motor_command = {px_term + ix_term - dx_term,
-                       py_term + iy_term - dy_term};
-    }
+    motor_command = {px_term + ix_term - dx_term, py_term + iy_term - dy_term};
 
     float x = ball_state.position().x;
     float y = ball_state.position().y;
@@ -111,7 +108,7 @@ int main(int, char **) {
     circle(transformed, Point(x, y), kBallRadius,
            touching_obstacle ? Scalar(0, 0, 0) : Scalar(255, 255, 255));
 
-    double fps = cv::getTickFrequency() / (cv::getTickCount() - start);
+    double fps = getTickFrequency() / (getTickCount() - start);
     putText(transformed, "FPS: " + std::to_string(fps), Point2f(20, 20),
             FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255, 255));
 
