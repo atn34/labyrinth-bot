@@ -32,6 +32,8 @@ int main(int, char **) {
   Vec2 motor_command;
 
   for (int iter = 0;; ++iter) {
+    int64 start = cv::getTickCount();
+
     cap >> src;
     if (!src.data) {
       return -1;
@@ -108,6 +110,10 @@ int main(int, char **) {
     circle(transformed, Point(goal.x, goal.y), kBallRadius, Scalar(0, 255, 0));
     circle(transformed, Point(x, y), kBallRadius,
            touching_obstacle ? Scalar(0, 0, 0) : Scalar(255, 255, 255));
+
+    double fps = cv::getTickFrequency() / (cv::getTickCount() - start);
+    putText(transformed, "FPS: " + std::to_string(fps), Point2f(20, 20),
+            FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255, 255));
 
     imshow("Controller", transformed);
   }
