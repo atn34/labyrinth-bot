@@ -29,7 +29,6 @@ int main(int, char **) {
 
   Vec2 goal = {640 / 2, 30};
   Vec2 accumulated_error = {};
-  Vec2 motor_zeros = {};
   RingBuffer<Vec2, 16> motor_command_history;
 
   for (;;) {
@@ -72,17 +71,6 @@ int main(int, char **) {
     accumulated_error += error;
     if (ball_state.velocity().MagnitudeSquared() >= 2) {
       accumulated_error *= 0.9;
-    }
-
-    if (std::abs(ball_state.velocity().x) * 10 > 10 &&
-        std::abs(ball_state.acceleration().x) * 100 < 2 &&
-        motor_command_history.full()) {
-      motor_zeros.x = motor_command_history.get(10).x;
-    }
-    if (std::abs(ball_state.velocity().y) * 10 > 10 &&
-        std::abs(ball_state.acceleration().y) * 100 < 2 &&
-        motor_command_history.full()) {
-      motor_zeros.y = motor_command_history.get(10).y;
     }
 
     Vec2 p{5, 5};
@@ -129,14 +117,9 @@ int main(int, char **) {
       motor_command.y += avoid_hole_y_adjustment;
     }
 
-    std::cout << touching_obstacle << ", ";
     std::cout << motor_command << ", ";
-    std::cout << motor_zeros << ", ";
-    std::cout << ball_state.position() << ", ";
-    std::cout << ball_state.velocity() << ", ";
-    std::cout << ball_state.acceleration() << std::endl;
+    std::cout << measured << std::endl;
 
-    motor_command += motor_zeros;
     motor_command_history.add(motor_command);
     motor_client->step_to(MotorClient::HORIZONTAL, motor_command.x);
     motor_client->step_to(MotorClient::VERTICAL, motor_command.y);
