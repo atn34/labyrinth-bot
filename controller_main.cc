@@ -29,9 +29,9 @@ int main(int, char **) {
 
   Vec2 goal = {640 / 2, 30};
   Vec2 accumulated_error = {};
-  RingBuffer<Vec2, 16> motor_command_history;
+  Vec2 motor_command;
 
-  for (;;) {
+  for (int iter = 0;; ++iter) {
     cap >> src;
     if (!src.data) {
       return -1;
@@ -84,8 +84,10 @@ int main(int, char **) {
     float dx_term = ball_state.velocity().x * d.x;
     float dy_term = ball_state.velocity().y * d.y;
 
-    Vec2 motor_command = {px_term + ix_term - dx_term,
-                          py_term + iy_term - dy_term};
+    if (iter % 5 == 0) {
+      motor_command = {px_term + ix_term - dx_term,
+                       py_term + iy_term - dy_term};
+    }
 
     float x = ball_state.position().x;
     float y = ball_state.position().y;
@@ -97,30 +99,9 @@ int main(int, char **) {
     line(transformed, Point(x, y), Point(x, y) + Point(ix_term, iy_term),
          Scalar(255, 0, 0));
 
-    float repel = 10000;
-    for (const auto &hole : HoleCenters()) {
-      Vec2 force = ball_state.position() - hole;
-
-      float avoid_hole_x_adjustment =
-          repel * force.x / (sqrt(force.x * force.x + force.y * force.y) *
-                             (force.x * force.x + force.y * force.y));
-      float avoid_hole_y_adjustment =
-          repel * force.y / (sqrt(force.x * force.x + force.y * force.y) *
-                             (force.x * force.x + force.y * force.y));
-
-      line(transformed, Point(hole.x, hole.y),
-           Point(hole.x, hole.y) +
-               Point(avoid_hole_x_adjustment, avoid_hole_y_adjustment),
-           Scalar(255, 255, 255));
-
-      motor_command.x += avoid_hole_x_adjustment;
-      motor_command.y += avoid_hole_y_adjustment;
-    }
-
     std::cout << motor_command << ", ";
     std::cout << measured << std::endl;
 
-    motor_command_history.add(motor_command);
     motor_client->step_to(MotorClient::HORIZONTAL, motor_command.x);
     motor_client->step_to(MotorClient::VERTICAL, motor_command.y);
 
