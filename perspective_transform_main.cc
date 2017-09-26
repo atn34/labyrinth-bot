@@ -1,9 +1,9 @@
+#include <iostream>
+
 #include "opencv2/highgui.hpp"
-#include "opencv2/opencv.hpp"
 
 #include "camera_properties.h"
 #include "perspective_transform.h"
-#include "threshold_ball.h"
 
 using namespace cv;
 
@@ -15,15 +15,16 @@ int main(int, char **) {
   if (!cap.isOpened()) return -1;
   namedWindow("Perspective Transform", CV_WINDOW_AUTOSIZE);
 
-  int low = 16;
-  int high = 130;
-  createTrackbar("low", "Perspective Transform", &low, 255);
-  createTrackbar("high", "Perspective Transform", &high, 255);
-
-  Mat src, transformed, masked;
-  Mat transform = Mat::eye(3, 3, CV_32FC1);
+  Mat src, transformed;
 
   for (;;) {
+    int key = cvWaitKey(1);
+    if (key == 'q') {
+      break;
+    }
+
+    int64 start = getTickCount();
+
     cap >> src;
     if (!src.data) {
       return -1;
@@ -32,18 +33,14 @@ int main(int, char **) {
     flip(src, src, -1);
 
     if (!PerspectiveTransform(src, &transformed)) {
-      continue;
-    }
-
-    ThresholdBall threshold_ball(low * 2 + 3, high - 255);
-
-    masked = threshold_ball.Threshold(transformed);
-
-    imshow("Perspective Transform", masked);
-
-    if (cvWaitKey(30) > 0) {
+      std::cerr << "perspective transform failed" << std::endl;
       break;
     }
+
+    double fps = getTickFrequency() / (getTickCount() - start);
+    putText(transformed, "FPS: " + std::to_string(fps), Point2f(20, 20),
+            FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255, 255));
+
+    imshow("Perspective Transform", transformed);
   }
-  return 0;
 }

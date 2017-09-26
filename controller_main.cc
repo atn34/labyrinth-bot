@@ -18,8 +18,8 @@ using namespace cv;
 int main(int, char **) {
   VideoCapture cap(1);
   cap.set(CV_CAP_PROP_FPS, CAMERA_FPS);
-  cap.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_WIDTH);
-  cap.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_HEIGHT);
+  cap.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT);
+  cap.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH);
   if (!cap.isOpened()) return -1;
   namedWindow("Controller", CV_WINDOW_AUTOSIZE);
 
