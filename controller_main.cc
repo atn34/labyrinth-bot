@@ -5,6 +5,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "ball_state.h"
+#include "camera_properties.h"
 #include "measure_ball_position.h"
 #include "motor_client.h"
 #include "perspective_transform.h"
@@ -16,7 +17,9 @@ using namespace cv;
 
 int main(int, char **) {
   VideoCapture cap(1);
-  cap.set(CV_CAP_PROP_FPS, 30);
+  cap.set(CV_CAP_PROP_FPS, CAMERA_FPS);
+  cap.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_WIDTH);
+  cap.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_HEIGHT);
   if (!cap.isOpened()) return -1;
   namedWindow("Controller", CV_WINDOW_AUTOSIZE);
 
@@ -27,7 +30,7 @@ int main(int, char **) {
   Subgoals sub_goals;
   std::unique_ptr<MotorClient> motor_client;
 
-  Vec2 goal = {640 / 2, 30};
+  Vec2 goal = {CAMERA_WIDTH / 2, 30};
   Vec2 accumulated_error = {};
   Vec2 motor_command;
 

@@ -1,6 +1,7 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
 
+#include "camera_properties.h"
 #include "perspective_transform.h"
 #include "threshold_ball.h"
 
@@ -8,6 +9,9 @@ using namespace cv;
 
 int main(int, char **) {
   VideoCapture cap(1);
+  cap.set(CV_CAP_PROP_FPS, CAMERA_FPS);
+  cap.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_WIDTH);
+  cap.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_HEIGHT);
   if (!cap.isOpened()) return -1;
   namedWindow("Perspective Transform", CV_WINDOW_AUTOSIZE);
 
