@@ -101,17 +101,21 @@ int main(int, char **) {
     line(transformed, Point(x, y), Point(x, y) + Point(ix_term, iy_term),
          Scalar(255, 0, 0));
 
-    std::cout << motor_command << ", ";
-    std::cout << measured << std::endl;
-
     motor_client->step_to(MotorClient::HORIZONTAL, motor_command.x);
     motor_client->step_to(MotorClient::VERTICAL, motor_command.y);
+
+    double fps = getTickFrequency() / (getTickCount() - start);
+
+    std::cout << motor_command << ", ";
+    std::cout << measured << ", ";
+    std::cout << 1 / fps << std::endl;
 
     circle(transformed, Point(goal.x, goal.y), kBallRadius, Scalar(0, 255, 0));
     circle(transformed, Point(x, y), kBallRadius,
            touching_obstacle ? Scalar(0, 0, 0) : Scalar(255, 255, 255));
 
-    double fps = getTickFrequency() / (getTickCount() - start);
+    resize(transformed, transformed, Size{640, 480});
+
     putText(transformed, "FPS: " + std::to_string(fps), Point2f(20, 20),
             FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255, 255));
 
