@@ -4,6 +4,8 @@
 
 #include "opencv2/opencv.hpp"
 
+#include "camera_properties.h"
+
 const std::vector<std::vector<Vec2>> &WallPolygons() {
   static const std::vector<std::vector<Vec2>> *result = []() {
     auto *out = new std::vector<std::vector<Vec2>>{
@@ -171,21 +173,35 @@ const std::vector<std::vector<Vec2>> &WallPolygons() {
         },
     };
 
+    for (auto &polygon : *out) {
+      for (auto &point : polygon) {
+        point *= Vec2{CAMERA_WIDTH, CAMERA_HEIGHT} / Vec2{640, 480};
+      }
+    }
+
     return out;
   }();
   return *result;
 }
 
 const std::vector<Vec2> &HoleCenters() {
-  static const std::vector<Vec2> *result = new std::vector<Vec2>{
-      {300, 171}, {455, 232}, {24, 30},   {81, 96},   {25, 256},  {25, 376},
-      {82, 342},  {83, 429},  {136, 95},  {135, 211}, {137, 297}, {137, 402},
-      {191, 96},  {191, 149}, {191, 257}, {191, 333}, {192, 454}, {245, 182},
-      {246, 334}, {301, 413}, {356, 79},  {355, 246}, {355, 360}, {409, 29},
-      {410, 126}, {410, 180}, {412, 334}, {412, 403}, {411, 453}, {512, 30},
-      {511, 111}, {513, 206}, {513, 359}, {564, 30},  {567, 182}, {567, 357},
-      {568, 452}, {619, 67},  {620, 295}, {619, 390},
-  };
+  static const std::vector<Vec2> *result = []() {
+    auto *out = new std::vector<Vec2>{
+        {300, 171}, {455, 232}, {24, 30},   {81, 96},   {25, 256},  {25, 376},
+        {82, 342},  {83, 429},  {136, 95},  {135, 211}, {137, 297}, {137, 402},
+        {191, 96},  {191, 149}, {191, 257}, {191, 333}, {192, 454}, {245, 182},
+        {246, 334}, {301, 413}, {356, 79},  {355, 246}, {355, 360}, {409, 29},
+        {410, 126}, {410, 180}, {412, 334}, {412, 403}, {411, 453}, {512, 30},
+        {511, 111}, {513, 206}, {513, 359}, {564, 30},  {567, 182}, {567, 357},
+        {568, 452}, {619, 67},  {620, 295}, {619, 390},
+    };
+
+    for (auto &point : *out) {
+      point *= Vec2{CAMERA_WIDTH, CAMERA_HEIGHT} / Vec2{640, 480};
+    }
+
+    return out;
+  }();
 
   return *result;
 }

@@ -3,8 +3,8 @@
 
 #include "opencv2/imgproc.hpp"
 
-constexpr int kPinkHueLow = 8;
-constexpr int kPinkHueHigh = 19;
+constexpr int kPinkHueLow = 0;
+constexpr int kPinkHueHigh = 20;
 constexpr int kPinkErosionSize = 2;
 
 class HueThresholder {

@@ -5,6 +5,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "ball_state.h"
+#include "camera_properties.h"
 #include "measure_ball_position.h"
 #include "motor_client.h"
 #include "perspective_transform.h"
@@ -16,7 +17,9 @@ using namespace cv;
 
 int main(int, char **) {
   VideoCapture cap(1);
-  cap.set(CV_CAP_PROP_FPS, 30);
+  cap.set(CV_CAP_PROP_FPS, CAMERA_FPS);
+  cap.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT);
+  cap.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH);
   if (!cap.isOpened()) return -1;
   namedWindow("Controller", CV_WINDOW_AUTOSIZE);
 
@@ -27,7 +30,7 @@ int main(int, char **) {
   Subgoals sub_goals;
   std::unique_ptr<MotorClient> motor_client;
 
-  Vec2 goal = {640 / 2, 30};
+  Vec2 goal = {CAMERA_WIDTH / 2, 30};
   Vec2 accumulated_error = {};
   Vec2 motor_command;
 
@@ -98,17 +101,21 @@ int main(int, char **) {
     line(transformed, Point(x, y), Point(x, y) + Point(ix_term, iy_term),
          Scalar(255, 0, 0));
 
-    std::cout << motor_command << ", ";
-    std::cout << measured << std::endl;
-
     motor_client->step_to(MotorClient::HORIZONTAL, motor_command.x);
     motor_client->step_to(MotorClient::VERTICAL, motor_command.y);
+
+    double fps = getTickFrequency() / (getTickCount() - start);
+
+    std::cout << motor_command << ", ";
+    std::cout << measured << ", ";
+    std::cout << 1 / fps << std::endl;
 
     circle(transformed, Point(goal.x, goal.y), kBallRadius, Scalar(0, 255, 0));
     circle(transformed, Point(x, y), kBallRadius,
            touching_obstacle ? Scalar(0, 0, 0) : Scalar(255, 255, 255));
 
-    double fps = getTickFrequency() / (getTickCount() - start);
+    resize(transformed, transformed, Size{640, 480});
+
     putText(transformed, "FPS: " + std::to_string(fps), Point2f(20, 20),
             FONT_HERSHEY_PLAIN, 1, Scalar(0, 0, 255, 255));
 

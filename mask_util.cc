@@ -1,5 +1,7 @@
 #include "mask_util.h"
 
+#include "camera_properties.h"
+
 using namespace cv;
 
 std::unique_ptr<Mat> get_mask_from_file(const std::string &file_name) {
@@ -16,5 +18,7 @@ std::unique_ptr<Mat> get_mask_from_file(const std::string &file_name) {
       }
     }
   }
+  Size size(CAMERA_WIDTH, CAMERA_HEIGHT);
+  resize(*mask, *mask, size);
   return mask;
 }
