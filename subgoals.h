@@ -5,10 +5,11 @@
 #include <unordered_set>
 #include <vector>
 
+#include "camera_properties.h"
 #include "geometry.h"
 
-constexpr float kBallRadius = 10;
-constexpr float kHoleRadius = 10;
+constexpr float kBallRadius = 10 * (CAMERA_WIDTH / 640.0);
+constexpr float kHoleRadius = 10 * (CAMERA_WIDTH / 640.0);
 
 enum ObstacleOrGoalType { kLineSegment, kCircle, kGoal };
 

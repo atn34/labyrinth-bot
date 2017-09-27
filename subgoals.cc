@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "bfs.h"
+#include "camera_properties.h"
 #include "geometry.h"
 #include "mask_util.h"
 #include "walls_and_holes.h"
@@ -16,15 +17,13 @@ namespace {
 
 const std::vector<Vec2> &subgoals() {
   static const std::vector<Vec2> *result = []() {
-    const Vec2 start{346, 29};
-    const Vec2 finish{620, 249};
+    const Vec2 start{346 / (640 / CAMERA_WIDTH), 29 / (480 / CAMERA_HEIGHT)};
+    const Vec2 finish{620 / (640 / CAMERA_WIDTH), 249 / (480 / CAMERA_HEIGHT)};
 
     std::unordered_map<Vec2, Vec2, Vec2Hasher> parents;
 
     auto img = get_mask_from_file("path.png");
     bitwise_not(*img, *img);
-
-    Mat path = imread("path.png");
 
     DoBfs(img.get(), start, [&](Vec2 p, Vec2 parent) {
       parents[p] = parent;
@@ -42,6 +41,7 @@ const std::vector<Vec2> &subgoals() {
       }
     }
     out->push_back(start);
+
     return out;
   }();
   return *result;

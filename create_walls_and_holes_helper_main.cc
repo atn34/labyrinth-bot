@@ -3,6 +3,7 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
 
+#include "camera_properties.h"
 #include "subgoals.h"
 #include "walls_and_holes.h"
 
@@ -16,6 +17,8 @@ struct MouseState {
 
 int main(int argc, char *argv[]) {
   Mat board = imread("board.png");
+  Size size(CAMERA_WIDTH, CAMERA_HEIGHT);
+  resize(board, board, size);
 
   cvNamedWindow("create walls", CV_WINDOW_AUTOSIZE);
 
@@ -89,7 +92,8 @@ int main(int argc, char *argv[]) {
           });
       circle(with_cursors, Point(mouse.x, mouse.y), kBallRadius,
              touching_obstacle ? Scalar(255, 255, 255) : Scalar(0, 0, 0));
-      circle(with_cursors, Point(subgoal.x, subgoal.y), 10, Scalar(0, 255, 0));
+      circle(with_cursors, Point(subgoal.x, subgoal.y), kBallRadius,
+             Scalar(0, 255, 0));
     }
     imshow("create walls", with_cursors);
 

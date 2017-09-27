@@ -29,6 +29,11 @@ struct Vec2 {
     y *= other;
     return *this;
   }
+  Vec2 &operator*=(const Vec2 &other) {
+    x *= other.x;
+    y *= other.y;
+    return *this;
+  }
 };
 
 inline float WrapAngle(float theta) { return atan2(sin(theta), cos(theta)); }
@@ -62,6 +67,14 @@ inline Vec2 operator+(const Vec2 &p1, const Vec2 &p2) {
 
 inline Vec2 operator*(const Vec2 &p1, float scalar) {
   return Vec2{p1.x * scalar, p1.y * scalar};
+}
+
+inline Vec2 operator*(const Vec2 &p1, const Vec2 &p2) {
+  return Vec2{p1.x * p2.x, p1.y / p2.y};
+}
+
+inline Vec2 operator/(const Vec2 &p1, const Vec2 &p2) {
+  return Vec2{p1.x / p2.x, p1.y / p2.y};
 }
 
 inline bool operator==(const Vec2 &p1, const Vec2 &p2) {
