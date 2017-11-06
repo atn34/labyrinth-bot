@@ -3,7 +3,6 @@
 #include "opencv2/highgui.hpp"
 
 #include "camera_properties.h"
-#include "find_pink_corners.h"
 
 using namespace cv;
 
